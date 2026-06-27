@@ -3,7 +3,7 @@ name: Daily TWSE Fetch
 on:
   schedule:
     # 09:00 UTC = 台北時間 17:00，週一到週五（台股收盤後、證交所資料已更新完）
-    - cron: '0 9 * * 1-5'
+    -  - cron: 0 9 * * 1-5
   workflow_dispatch: {}   # 讓你可以在GitHub網頁上手動按「Run workflow」立刻跑一次
 
 permissions:
