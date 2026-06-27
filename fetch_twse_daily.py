@@ -21,6 +21,11 @@ from datetime import datetime, timezone, timedelta
 # 證交所「上市個股日成交資訊」OpenAPI（公開資料，免金鑰）
 URL = "https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL"
 
+# 證交所「三大法人買賣超日報」(T86)，用來算外資買超。
+# 注意：這份資料公布時間較晚（官方說法：有時下午4-5點，有時要到晚上9-10點），
+# 排程時間要排晚一點才抓得到，見 .github/workflows/daily-fetch.yml 裡的cron設定。
+T86_URL_TEMPLATE = "https://www.twse.com.tw/fund/T86?response=json&date={date}&selectType=ALL"
+
 # 不同版本的API可能用不同的欄位名稱代表「漲跌價差」，多嘗試幾個
 CHANGE_FIELD_CANDIDATES = ["Change", "PriceChange", "Diff", "漲跌價差"]
 
@@ -56,7 +61,55 @@ def extract_change(item: dict) -> float | None:
     return None
 
 
-def build_rows(raw: list[dict]) -> tuple[list[dict], bool]:
+def fetch_foreign_net_buy(date_str: str) -> tuple[dict[str, float], str | None]:
+    """
+    抓「三大法人買賣超日報」(T86)，算出每支股票的外資買超(張)。
+    外資買超 = 外陸資買賣超股數(不含外資自營商) + 外資自營商買賣超股數，股數除以1000轉成張。
+
+    回傳 (code -> 外資買超張數 的字典, 實際資料日期字串或None)
+    抓不到時回傳 ({}, None)，不會讓整支程式失敗（這份資料公布較晚，偶爾抓不到是正常的）。
+    """
+    try:
+        data = fetch_json(T86_URL_TEMPLATE.format(date=date_str))
+    except (urllib.error.URLError, urllib.error.HTTPError) as e:
+        print(f"[警告] 抓外資買賣超(T86)失敗：{e}")
+        return {}, None
+
+    if not isinstance(data, dict) or "fields" not in data or "data" not in data:
+        print("[警告] 外資買賣超(T86) 回應格式不符預期（可能今天還沒公布），這次先沒有外資買超欄位")
+        return {}, None
+
+    fields = data["fields"]
+
+    def idx(name: str) -> int:
+        for i, f in enumerate(fields):
+            if name in f:
+                return i
+        return -1
+
+    code_i = idx("證券代號")
+    fb1_i = idx("外陸資買賣超股數")       # 不含外資自營商，金額最大宗
+    fb2_i = idx("外資自營商買賣超股數")    # 外資自營商，金額通常很小
+
+    if code_i < 0:
+        print("[警告] 外資買賣超(T86) 找不到證券代號欄位，跳過這項資料")
+        return {}, None
+
+    result: dict[str, float] = {}
+    for row in data.get("data", []):
+        try:
+            code = str(row[code_i]).strip()
+            v1 = to_float(row[fb1_i]) if fb1_i >= 0 else 0.0
+            v2 = to_float(row[fb2_i]) if fb2_i >= 0 else 0.0
+            result[code] = round(((v1 or 0.0) + (v2 or 0.0)) / 1000, 1)  # 股 -> 張
+        except (IndexError, ValueError):
+            continue
+
+    actual_date = data.get("date")  # 證交所回應裡通常會附實際資料日期(YYYYMMDD)
+    return result, actual_date
+
+
+def build_rows(raw: list[dict], foreign_map: dict[str, float]) -> tuple[list[dict], bool]:
     """
     回傳 (rows, change_field_found)
     change_field_found=False 時代表API裡找不到漲跌欄位，
@@ -98,6 +151,7 @@ def build_rows(raw: list[dict]) -> tuple[list[dict], bool]:
             "volume": vol_shares / 1000,  # 股 -> 張，跟畫面上的「成交量門檻(張)」單位對齊
             "changePct": pct,
             "changePctIsEstimate": is_estimate,
+            "foreignNetBuy": foreign_map.get(code),  # 張；抓不到時是 None
         })
     return rows, change_field_found
 
@@ -109,14 +163,23 @@ def main():
         print(f"[錯誤] 連線證交所API失敗：{e}")
         raise SystemExit(1)
 
-    rows, change_field_found = build_rows(raw)
+    tz = timezone(timedelta(hours=8))
+    today_str = datetime.now(tz).strftime("%Y%m%d")
+
+    foreign_map, t86_date = fetch_foreign_net_buy(today_str)
+    if not foreign_map:
+        print("[提示] 這次沒有抓到外資買超資料（可能是還沒公布，或今天不是交易日），"
+              "股票資料仍會照常產生，外資買超欄位會是空值。")
+
+    rows, change_field_found = build_rows(raw, foreign_map)
     if not change_field_found:
         print("[警告] API回傳資料裡找不到漲跌欄位，漲跌%已改用「(收盤-開盤)/開盤」估計，"
               "精確度較低（不是真正比昨收的漲跌幅），畫面上會標記為估計值。")
 
-    tz = timezone(timedelta(hours=8))
+    trade_date_display = t86_date or today_str  # YYYYMMDD，畫面上會轉成 YYYY-MM-DD 顯示
     payload = {
         "updatedAt": datetime.now(tz).isoformat(),
+        "tradeDate": trade_date_display,
         "source": URL,
         "rowCount": len(rows),
         "rows": rows,
@@ -126,7 +189,7 @@ def main():
     with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
         json.dump(payload, f, ensure_ascii=False)
 
-    print(f"寫入完成：{len(rows)} 筆資料 -> {OUTPUT_PATH}")
+    print(f"寫入完成：{len(rows)} 筆資料，外資買超抓到 {len(foreign_map)} 筆 -> {OUTPUT_PATH}")
 
 
 if __name__ == "__main__":
