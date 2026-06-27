@@ -109,6 +109,19 @@ def fetch_foreign_net_buy(date_str: str) -> tuple[dict[str, float], str | None]:
     return result, actual_date
 
 
+def fetch_foreign_net_buy_with_retry(tz, max_days_back: int = 7) -> tuple[dict[str, float], str | None]:
+    """
+    從今天開始往前找，直到抓到有資料的那一天為止（處理週末/假日手動測試的情況）。
+    """
+    for delta in range(max_days_back):
+        d = datetime.now(tz) - timedelta(days=delta)
+        date_str = d.strftime("%Y%m%d")
+        result, actual_date = fetch_foreign_net_buy(date_str)
+        if result:
+            return result, actual_date
+    return {}, None
+
+
 def build_rows(raw: list[dict], foreign_map: dict[str, float]) -> tuple[list[dict], bool]:
     """
     回傳 (rows, change_field_found)
@@ -166,10 +179,10 @@ def main():
     tz = timezone(timedelta(hours=8))
     today_str = datetime.now(tz).strftime("%Y%m%d")
 
-    foreign_map, t86_date = fetch_foreign_net_buy(today_str)
+    foreign_map, t86_date = fetch_foreign_net_buy_with_retry(tz)
     if not foreign_map:
-        print("[提示] 這次沒有抓到外資買超資料（可能是還沒公布，或今天不是交易日），"
-              "股票資料仍會照常產生，外資買超欄位會是空值。")
+        print("[提示] 往前找了好幾天還是沒抓到外資買超資料，股票資料仍會照常產生，"
+              "外資買超欄位會是空值。")
 
     rows, change_field_found = build_rows(raw, foreign_map)
     if not change_field_found:
