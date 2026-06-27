@@ -1,0 +1,33 @@
+name: Daily TWSE Fetch
+
+on:
+  schedule:
+    # 09:00 UTC = 台北時間 17:00，週一到週五（台股收盤後、證交所資料已更新完）
+    - cron: '0 9 * * 1-5'
+  workflow_dispatch: {}   # 讓你可以在GitHub網頁上手動按「Run workflow」立刻跑一次
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Fetch TWSE daily data
+        run: python fetch_twse_daily.py
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/latest.json
+          git diff --staged --quiet || git commit -m "Update TWSE daily data $(date -u +'%Y-%m-%d')"
+          git push
