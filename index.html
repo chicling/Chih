@@ -178,4 +178,369 @@
       <option value="8000">8000 張以上</option>
       <option value="10000">10000 張以上</option>
     </select>
-    <p class="hint" style="margin:6px 0 0;">外資買賣超資料公布較晚（常常要到晚上才出來），如果這項抓不到，股
+    <p class="hint" style="margin:6px 0 0;">外資買賣超資料公布較晚（常常要到晚上才出來），如果這項抓不到，股票仍會照常顯示，只是外資買超那一欄會是「—」。</p>
+
+    <button class="primary" id="btnLoadAuto">讀取每日自動更新資料</button>
+    <div class="status" id="autoStatus"></div>
+
+    <details>
+      <summary>進階：改用本地代理抓盤中即時排行（需要電腦）</summary>
+      <p class="hint" style="margin-top:8px;">這個模式要先在電腦上啟動 <code class="mono">cdp_proxy_server.py</code>，手機沒有電腦輔助的話可以忽略這個選項。</p>
+      <input type="text" id="proxyUrl" placeholder="http://你的電腦區網IP:8765/ranking" value="http://127.0.0.1:8765/ranking">
+      <button class="secondary" id="btnLoadProxy">改用本地代理即時排行</button>
+    </details>
+  </section>
+
+  <!-- 個股查詢 -->
+  <section class="card" id="queryCard">
+    <h2><span class="tag">查詢</span> 個股 CDP</h2>
+    <p class="hint">輸入股票代碼與你要採用的交易日，直接連線證交所抓那天的最高/最低/收盤，算出 CDP 五個價位（給下一個交易日參考）。</p>
+    <div class="row2">
+      <div>
+        <label for="stockCode">股票代碼</label>
+        <input type="text" id="stockCode" placeholder="例如 2330" inputmode="numeric">
+      </div>
+      <div>
+        <label for="stockDate">交易日期</label>
+        <input type="date" id="stockDate">
+      </div>
+    </div>
+    <button class="primary" id="btnQueryStock">查詢個股 CDP</button>
+    <div class="status" id="queryStatus"></div>
+    <div id="ladderResult"></div>
+  </section>
+
+  <!-- Step 2 -->
+  <section class="card" id="resultsCard">
+    <h2><span class="tag">STEP 2</span> 劇本表結果</h2>
+    <p class="hint">符合門檻的股票，依漲跌幅排序，附上隔日的 CDP/AH/NH/NL/AL。</p>
+    <div class="status" id="tradeDateLine" style="margin-top:0;"></div>
+    <div class="scroll-x">
+      <table id="resultsTable" style="display:none;">
+        <thead>
+          <tr>
+            <th>代碼</th><th>名稱</th><th>收盤</th><th>漲跌%</th><th>量(張)</th><th>外資買超</th>
+            <th>CDP</th><th>AH</th><th>NH</th><th>NL</th><th>AL</th>
+          </tr>
+        </thead>
+        <tbody id="resultsBody"></tbody>
+      </table>
+    </div>
+    <div class="empty" id="resultsEmpty">還沒有資料 — 先按上面「讀取每日自動更新資料」或下面手動貼上。</div>
+  </section>
+
+  <!-- 手動貼上 -->
+  <section class="card" id="pasteCard">
+    <h2><span class="tag">備用</span> 手動貼上資料</h2>
+    <p class="hint">若自動抓取失敗（通常是瀏覽器安全限制擋住跨網域請求），到玩股網或任何漲跌幅排行頁面整段複製表格，貼到下面，再指定每一欄對應的欄位。</p>
+    <textarea id="pasteArea" placeholder="把整段表格複製貼上這裡，例如每一行：&#10;2330&#9;台積電&#9;1080&#9;1050&#9;1075&#9;+2.3&#9;45000"></textarea>
+
+    <div class="colmap">
+      <div><label>代碼欄 (第幾欄)</label><input type="number" id="colCode" value="1" min="1"></div>
+      <div><label>名稱欄</label><input type="number" id="colName" value="2" min="1"></div>
+      <div><label>最高欄</label><input type="number" id="colHigh" value="3" min="1"></div>
+      <div><label>最低欄</label><input type="number" id="colLow" value="4" min="1"></div>
+      <div><label>收盤欄</label><input type="number" id="colClose" value="5" min="1"></div>
+      <div><label>漲跌%欄</label><input type="number" id="colPct" value="6" min="1"></div>
+      <div><label>成交量欄</label><input type="number" id="colVol" value="7" min="1"></div>
+      <div><label>外資買超欄(沒有就留空)</label><input type="number" id="colForeign" min="1"></div>
+    </div>
+
+    <button class="secondary" id="btnParsePaste">解析貼上的資料並套用篩選</button>
+    <div class="status" id="pasteStatus"></div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="formula mono">
+    CDP = (收盤×2 + 最高 + 最低) / 4<br>
+    AH = CDP + (最高-最低) ・ NH = CDP×2-最低<br>
+    NL = CDP×2-最高 ・ AL = CDP - (最高-最低)
+  </div>
+  用你選的那一天的最高/最低/收盤價當作「昨」資料代入 CDP 公式，算出的支撐壓力是給「下一個交易日」開盤用的參考。
+  本工具僅做技術指標計算與資料整理，不構成投資建議。資料來源：臺灣證券交易所公開資訊／使用者貼上資料。
+</footer>
+
+<script>
+// ============================================================
+// 共用：CDP 計算
+// ============================================================
+function calcCDP(high, low, close){
+  const cdp = (2*close + high + low) / 4;
+  const range = high - low;
+  return {
+    cdp,
+    ah: cdp + range,
+    nh: cdp*2 - low,
+    nl: cdp*2 - high,
+    al: cdp - range,
+  };
+}
+function fmt(n){
+  if(n === null || n === undefined || Number.isNaN(n)) return '—';
+  return n.toFixed(2);
+}
+
+// ============================================================
+// 時鐘（台北時間）
+// ============================================================
+function tickClock(){
+  const now = new Date();
+  const tpe = new Date(now.toLocaleString('en-US', {timeZone:'Asia/Taipei'}));
+  const hh = String(tpe.getHours()).padStart(2,'0');
+  const mm = String(tpe.getMinutes()).padStart(2,'0');
+  const ss = String(tpe.getSeconds()).padStart(2,'0');
+  document.getElementById('clockTime').textContent = `${hh}:${mm}:${ss}`;
+  const days = ['週日','週一','週二','週三','週四','週五','週六'];
+  document.getElementById('clockDate').textContent =
+    `${tpe.getFullYear()}/${String(tpe.getMonth()+1).padStart(2,'0')}/${String(tpe.getDate()).padStart(2,'0')} ${days[tpe.getDay()]} 台北時間`;
+}
+tickClock();
+setInterval(tickClock, 1000);
+
+// ============================================================
+// STEP1: 讀取自動資料 → 篩選 → 算CDP → 顯示
+// ============================================================
+let lastRows = []; // {code,name,close,high,low,changePct,volume}
+
+function applyFilterAndRender(rows){
+  const gainTh = parseFloat(document.getElementById('gainThreshold').value) || 0;
+  const volTh = parseFloat(document.getElementById('volThreshold').value) || 0;
+  const foreignTh = parseFloat(document.getElementById('foreignThreshold').value) || 0;
+
+  const filtered = rows.filter(r => {
+    const passVol = (r.volume ?? 0) >= volTh;
+    const passGain = r.changePct === null || r.changePct === undefined
+      ? true
+      : Math.abs(r.changePct) >= gainTh;
+    const passForeign = foreignTh <= 0
+      ? true
+      : (r.foreignNetBuy !== null && r.foreignNetBuy !== undefined && r.foreignNetBuy >= foreignTh);
+    return passVol && passGain && passForeign;
+  }).sort((a,b) => Math.abs(b.changePct ?? 0) - Math.abs(a.changePct ?? 0));
+
+  renderResultsTable(filtered);
+}
+
+function renderResultsTable(rows){
+  const table = document.getElementById('resultsTable');
+  const body = document.getElementById('resultsBody');
+  const empty = document.getElementById('resultsEmpty');
+  body.innerHTML = '';
+
+  if(!rows.length){
+    table.style.display = 'none';
+    empty.style.display = 'block';
+    empty.textContent = '沒有股票符合目前的門檻，試著調低漲跌幅、成交量或外資買超門檻。';
+    return;
+  }
+  empty.style.display = 'none';
+  table.style.display = 'table';
+
+  for(const r of rows){
+    if(r.high === undefined || r.low === undefined || r.close === undefined) continue;
+    const lv = calcCDP(r.high, r.low, r.close);
+    const tr = document.createElement('tr');
+    const pctClass = (r.changePct ?? 0) >= 0 ? 'up' : 'down';
+    const pctText = r.changePct === null || r.changePct === undefined ? '—' : (r.changePct>0?'+':'')+r.changePct.toFixed(2)+'%';
+    const foreignText = (r.foreignNetBuy === null || r.foreignNetBuy === undefined) ? '—' : Math.round(r.foreignNetBuy).toLocaleString();
+    const foreignClass = (r.foreignNetBuy ?? 0) >= 0 ? 'up' : 'down';
+    tr.innerHTML = `
+      <td>${r.code}</td>
+      <td>${r.name ?? ''}</td>
+      <td>${fmt(r.close)}</td>
+      <td class="pct ${pctClass}">${pctText}</td>
+      <td>${r.volume ? Math.round(r.volume).toLocaleString() : '—'}</td>
+      <td class="pct ${foreignClass}">${foreignText}</td>
+      <td>${fmt(lv.cdp)}</td>
+      <td>${fmt(lv.ah)}</td>
+      <td>${fmt(lv.nh)}</td>
+      <td>${fmt(lv.nl)}</td>
+      <td>${fmt(lv.al)}</td>
+    `;
+    body.appendChild(tr);
+  }
+}
+
+document.getElementById('btnLoadAuto').addEventListener('click', async () => {
+  const statusEl = document.getElementById('autoStatus');
+  statusEl.className = 'status';
+  statusEl.textContent = '讀取中…';
+  try{
+    const res = await fetch('./data/latest.json', {cache:'no-store'});
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    const rows = (json.rows || []).map(r => ({
+      code: r.code, name: r.name, close: r.close, high: r.high, low: r.low,
+      changePct: r.changePct, volume: r.volume, foreignNetBuy: r.foreignNetBuy,
+    }));
+    lastRows = rows;
+    applyFilterAndRender(rows);
+    const ts = json.updatedAt ? new Date(json.updatedAt).toLocaleString('zh-TW', {timeZone:'Asia/Taipei'}) : '未知';
+    statusEl.className = 'status ok';
+    statusEl.textContent = `讀取成功，共 ${rows.length} 筆。資料更新時間：${ts}`;
+
+    const dateLine = document.getElementById('tradeDateLine');
+    if(json.tradeDate){
+      const d = String(json.tradeDate);
+      const niceDate = d.length === 8 ? `${d.slice(0,4)}-${d.slice(4,6)}-${d.slice(6,8)}` : d;
+      dateLine.className = 'status';
+      dateLine.textContent = `資料日期：${niceDate}（股票的最高/最低/收盤、外資買超都是這一天的）`;
+    }else{
+      dateLine.textContent = '';
+    }
+  }catch(err){
+    statusEl.className = 'status err';
+    statusEl.textContent = '讀取失敗：' + err.message + '（可能是 data/latest.json 還沒被排程產生過，到 repo 的 Actions 分頁手動 Run workflow 一次；或改用下面手動貼上）';
+  }
+});
+
+document.getElementById('gainThreshold').addEventListener('change', () => lastRows.length && applyFilterAndRender(lastRows));
+document.getElementById('volThreshold').addEventListener('change', () => lastRows.length && applyFilterAndRender(lastRows));
+document.getElementById('foreignThreshold').addEventListener('change', () => lastRows.length && applyFilterAndRender(lastRows));
+
+// 進階：本地代理（選用，需要電腦跑 cdp_proxy_server.py）
+document.getElementById('btnLoadProxy').addEventListener('click', async () => {
+  const statusEl = document.getElementById('autoStatus');
+  const url = document.getElementById('proxyUrl').value.trim();
+  statusEl.className = 'status';
+  statusEl.textContent = '連線本地代理中…';
+  try{
+    const res = await fetch(url, {cache:'no-store'});
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    if(!json.rows){
+      throw new Error('代理伺服器回傳的格式不是預期的 {rows:[...]}，請依 cdp_proxy_server.py 裡的說明調整解析邏輯');
+    }
+    lastRows = json.rows;
+    applyFilterAndRender(json.rows);
+    statusEl.className = 'status ok';
+    statusEl.textContent = `讀取成功，共 ${json.rows.length} 筆（即時代理）`;
+  }catch(err){
+    statusEl.className = 'status err';
+    statusEl.textContent = '連線失敗：' + err.message;
+  }
+});
+
+// ============================================================
+// 個股 CDP 查詢（直接連證交所單股 API）
+// ============================================================
+function toROCDateParts(isoDate){
+  const [y,m,d] = isoDate.split('-').map(Number);
+  return { rocY: y - 1911, m, d, gregY: y };
+}
+
+document.getElementById('btnQueryStock').addEventListener('click', async () => {
+  const statusEl = document.getElementById('queryStatus');
+  const ladderEl = document.getElementById('ladderResult');
+  const code = document.getElementById('stockCode').value.trim();
+  const dateStr = document.getElementById('stockDate').value;
+  ladderEl.innerHTML = '';
+  if(!code || !dateStr){
+    statusEl.className = 'status err';
+    statusEl.textContent = '請輸入股票代碼與日期';
+    return;
+  }
+  statusEl.className = 'status';
+  statusEl.textContent = '連線證交所查詢中…';
+
+  try{
+    const { rocY, m, d, gregY } = toROCDateParts(dateStr);
+    const apiDate = `${gregY}${String(m).padStart(2,'0')}01`;
+    const url = `https://www.twse.com.tw/exchangeReport/STOCK_DAY?response=json&date=${apiDate}&stockNo=${encodeURIComponent(code)}`;
+    const res = await fetch(url);
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    if(!json.data || !json.fields) throw new Error('查無資料（可能該股票代碼錯誤，或當月沒有交易資料）');
+
+    const fields = json.fields;
+    const idx = name => fields.findIndex(f => f.includes(name));
+    const dateIdx = idx('日期'), highIdx = idx('最高'), lowIdx = idx('最低'), closeIdx = idx('收盤');
+
+    const targetDate = `${rocY}/${String(m).padStart(2,'0')}/${String(d).padStart(2,'0')}`;
+    const row = json.data.find(r => r[dateIdx] === targetDate);
+    if(!row) throw new Error(`在回傳資料裡找不到 ${targetDate} 這一天（可能不是交易日）`);
+
+    const high = parseFloat(String(row[highIdx]).replace(/,/g,''));
+    const low = parseFloat(String(row[lowIdx]).replace(/,/g,''));
+    const close = parseFloat(String(row[closeIdx]).replace(/,/g,''));
+    const lv = calcCDP(high, low, close);
+
+    ladderEl.innerHTML = `
+      <div class="ladder">
+        <div class="lv ah"><span class="name">AH 最高壓力</span><span class="val mono">${fmt(lv.ah)}</span></div>
+        <div class="lv nh"><span class="name">NH 強壓力區</span><span class="val mono">${fmt(lv.nh)}</span></div>
+        <div class="lv cdp"><span class="name">CDP 中軸價位</span><span class="val mono">${fmt(lv.cdp)}</span></div>
+        <div class="lv nl"><span class="name">NL 強支撐區</span><span class="val mono">${fmt(lv.nl)}</span></div>
+        <div class="lv al"><span class="name">AL 最低支撐</span><span class="val mono">${fmt(lv.al)}</span></div>
+      </div>`;
+    statusEl.className = 'status ok';
+    statusEl.textContent = `${targetDate} 收盤 ${fmt(close)}（高 ${fmt(high)} / 低 ${fmt(low)}）→ 以上為下一個交易日參考價位`;
+  }catch(err){
+    statusEl.className = 'status err';
+    statusEl.textContent = '查詢失敗：' + err.message + '（多半是瀏覽器跨網域限制，可改用手動貼上方式）';
+  }
+});
+
+// ============================================================
+// 手動貼上備援
+// ============================================================
+document.getElementById('btnParsePaste').addEventListener('click', () => {
+  const statusEl = document.getElementById('pasteStatus');
+  const raw = document.getElementById('pasteArea').value;
+  if(!raw.trim()){
+    statusEl.className = 'status err';
+    statusEl.textContent = '請先貼上資料';
+    return;
+  }
+  const cCode = parseInt(document.getElementById('colCode').value) - 1;
+  const cName = parseInt(document.getElementById('colName').value) - 1;
+  const cHigh = parseInt(document.getElementById('colHigh').value) - 1;
+  const cLow = parseInt(document.getElementById('colLow').value) - 1;
+  const cClose = parseInt(document.getElementById('colClose').value) - 1;
+  const cPct = parseInt(document.getElementById('colPct').value) - 1;
+  const cVol = parseInt(document.getElementById('colVol').value) - 1;
+  const cForeignRaw = document.getElementById('colForeign').value;
+  const cForeign = cForeignRaw ? parseInt(cForeignRaw) - 1 : null;
+
+  const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
+  const rows = [];
+  for(const line of lines){
+    // 支援 tab 或多個空白分隔
+    const cells = line.split(/\t+|\s{2,}/).map(c => c.trim()).filter(c => c !== '');
+    if(cells.length < 3) continue;
+    const toNum = s => {
+      if(s === undefined) return null;
+      const n = parseFloat(String(s).replace(/[,%+]/g,''));
+      return Number.isNaN(n) ? null : n;
+    };
+    const code = cells[cCode];
+    if(!code || !/^[0-9A-Za-z]+$/.test(code)) continue; // 跳過表頭等非資料列
+    rows.push({
+      code,
+      name: cells[cName] ?? '',
+      high: toNum(cells[cHigh]),
+      low: toNum(cells[cLow]),
+      close: toNum(cells[cClose]),
+      changePct: toNum(cells[cPct]),
+      volume: toNum(cells[cVol]),
+      foreignNetBuy: cForeign !== null ? toNum(cells[cForeign]) : null,
+    });
+  }
+
+  const valid = rows.filter(r => r.high !== null && r.low !== null && r.close !== null);
+  if(!valid.length){
+    statusEl.className = 'status err';
+    statusEl.textContent = '沒有解析出有效資料，檢查一下欄位編號是否對應正確，或資料是否用Tab/多個空白分隔。';
+    return;
+  }
+  lastRows = valid;
+  applyFilterAndRender(valid);
+  statusEl.className = 'status ok';
+  statusEl.textContent = `解析成功，共 ${valid.length} 筆，已套用篩選並顯示在上面的劇本表。`;
+  document.getElementById('resultsCard').scrollIntoView({behavior:'smooth', block:'start'});
+});
+</script>
+</body>
+</html>
