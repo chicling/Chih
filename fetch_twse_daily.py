@@ -71,8 +71,10 @@ def fetch_foreign_net_buy(date_str: str) -> tuple[dict[str, float], str | None]:
     """
     try:
         data = fetch_json(T86_URL_TEMPLATE.format(date=date_str))
-    except (urllib.error.URLError, urllib.error.HTTPError) as e:
-        print(f"[警告] 抓外資買賣超(T86)失敗：{e}")
+    except (urllib.error.URLError, urllib.error.HTTPError, ValueError) as e:
+        # ValueError 也涵蓋 json.JSONDecodeError：
+        # 非交易日這個網址常常回傳空白內容，不是合法JSON，要在這裡攔住，不能讓它整支程式炸掉
+        print(f"[警告] 抓外資買賣超(T86)失敗（{date_str}）：{e}")
         return {}, None
 
     if not isinstance(data, dict) or "fields" not in data or "data" not in data:
@@ -172,7 +174,7 @@ def build_rows(raw: list[dict], foreign_map: dict[str, float]) -> tuple[list[dic
 def main():
     try:
         raw = fetch_json(URL)
-    except (urllib.error.URLError, urllib.error.HTTPError) as e:
+    except (urllib.error.URLError, urllib.error.HTTPError, ValueError) as e:
         print(f"[錯誤] 連線證交所API失敗：{e}")
         raise SystemExit(1)
 
