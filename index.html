@@ -139,6 +139,49 @@
     margin-bottom:10px;line-height:1.9;
   }
   .empty{color:var(--muted);font-size:13px;padding:14px 0;text-align:center;}
+
+  /* 劇本卡片 scenario card */
+  .scenario-card{
+    background:var(--panel-2);border:1px solid var(--hairline);
+    border-radius:var(--radius);padding:14px;margin-bottom:14px;
+  }
+  .sc-head{margin-bottom:10px;}
+  .sc-title{display:flex;align-items:baseline;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
+  .sc-name{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;}
+  .sc-code{color:var(--muted);font-size:12px;}
+  .sc-badges{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;}
+  .badge{
+    font-family:'IBM Plex Mono',monospace;font-size:11.5px;padding:4px 9px;
+    border-radius:999px;background:var(--panel);border:1px solid var(--hairline);color:var(--paper);
+  }
+  .badge.pct.up{color:var(--up);border-color:var(--up);}
+  .badge.pct.down{color:var(--down);border-color:var(--down);}
+  .badge.foreign.up{color:var(--amber);border-color:var(--amber);}
+  .badge.foreign.down{color:var(--muted);}
+
+  .sc-ohlc{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:6px;}
+  .sc-ohlc label{font-size:10.5px;margin:0 0 3px;}
+  .sc-ohlc input{padding:7px 8px;font-size:13px;}
+
+  .cdp-row{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin:10px 0;}
+  .cdp-box{background:var(--panel);border:1px solid var(--hairline);border-radius:6px;padding:7px 4px;text-align:center;}
+  .cdp-box .name{display:block;font-size:9.5px;color:var(--muted);margin-bottom:3px;font-family:'IBM Plex Mono',monospace;}
+  .cdp-box .val{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:12.5px;}
+  .cdp-box.ah .val,.cdp-box.nh .val{color:var(--up);}
+  .cdp-box.cdp{background:#20180A;}
+  .cdp-box.cdp .val{color:var(--amber);}
+  .cdp-box.nl .val,.cdp-box.al .val{color:var(--down);}
+
+  .sc-fields .row{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid var(--hairline);font-size:12.5px;}
+  .sc-fields .row:last-child{border-bottom:none;}
+  .sc-fields .k{color:var(--muted);flex:0 0 78px;}
+  .sc-fields .v{flex:1;text-align:right;}
+  .sc-fields .v.long{color:var(--up);}
+  .sc-fields .v.short{color:var(--down);}
+  .sc-fields .v.neutral{color:var(--muted);}
+
+  .live-btn{margin-top:12px;}
+  .live-display{min-height:14px;}
 </style>
 </head>
 <body>
@@ -212,20 +255,10 @@
 
   <!-- Step 2 -->
   <section class="card" id="resultsCard">
-    <h2><span class="tag">STEP 2</span> 劇本表結果</h2>
-    <p class="hint">符合門檻的股票，依漲跌幅排序，附上隔日的 CDP/AH/NH/NL/AL。</p>
+    <h2><span class="tag">STEP 2</span> 劇本卡</h2>
+    <p class="hint">符合門檻的股票，依漲跌幅排序，每張卡片可直接改昨收/昨高/昨低/量即時重算。</p>
     <div class="status" id="tradeDateLine" style="margin-top:0;"></div>
-    <div class="scroll-x">
-      <table id="resultsTable" style="display:none;">
-        <thead>
-          <tr>
-            <th>代碼</th><th>名稱</th><th>收盤</th><th>漲跌%</th><th>量(張)</th><th>外資買超</th>
-            <th>CDP</th><th>AH</th><th>NH</th><th>NL</th><th>AL</th>
-          </tr>
-        </thead>
-        <tbody id="resultsBody"></tbody>
-      </table>
-    </div>
+    <div id="resultsList" style="display:none;"></div>
     <div class="empty" id="resultsEmpty">還沒有資料 — 先按上面「讀取每日自動更新資料」或下面手動貼上。</div>
   </section>
 
@@ -320,46 +353,209 @@ function applyFilterAndRender(rows){
     return passVol && passGain && passForeign;
   }).sort((a,b) => Math.abs(b.changePct ?? 0) - Math.abs(a.changePct ?? 0));
 
-  renderResultsTable(filtered);
+  renderResultsCards(filtered);
 }
 
-function renderResultsTable(rows){
-  const table = document.getElementById('resultsTable');
-  const body = document.getElementById('resultsBody');
+// ============================================================
+// 劇本卡片引擎：算CDP衍生出的方向/進場條件/停損停利/星等/備註
+// ============================================================
+function computeScenario(high, low, close, volume, foreignNetBuy){
+  const lv = calcCDP(high, low, close);
+  const distPct = lv.cdp !== 0 ? (close - lv.cdp) / lv.cdp * 100 : 0;
+  let direction, directionLabel, entryCond, entryLow, entryHigh,
+      stopLossLabel, target1Label, target2Label;
+
+  if(distPct > 0){
+    direction = 'long';
+    directionLabel = distPct >= 3 ? '偏多（強勢延續）' : (distPct >= 1 ? '偏多（延續偏多）' : '偏多（觀察中）');
+    entryCond = '開盤5分鐘內站穩NH上方且量能放大';
+    entryLow = lv.nh;
+    entryHigh = Math.round(lv.nh * 1.005 * 100) / 100;
+    stopLossLabel = `跌破NL → ${fmt(lv.nl)}元`;
+    target1Label = `${fmt(lv.nh)}元（測NH）`;
+    target2Label = `${fmt(lv.ah)}元（測AH）`;
+  } else if(distPct < 0){
+    direction = 'short';
+    directionLabel = distPct <= -3 ? '偏空（弱勢延續）' : (distPct <= -1 ? '偏空（延續偏空）' : '偏空（觀察中）');
+    entryCond = '開盤5分鐘內跌破NL下方且量能放大';
+    entryLow = Math.round(lv.nl * 0.995 * 100) / 100;
+    entryHigh = lv.nl;
+    stopLossLabel = `突破NH → ${fmt(lv.nh)}元`;
+    target1Label = `${fmt(lv.nl)}元（測NL）`;
+    target2Label = `${fmt(lv.al)}元（測AL）`;
+  } else {
+    direction = 'neutral';
+    directionLabel = '方向不明（觀望）';
+    entryCond = '暫無明確方向，建議先觀望';
+    entryLow = null; entryHigh = null;
+    stopLossLabel = '—'; target1Label = '—'; target2Label = '—';
+  }
+
+  const ampPct = close ? (high - low) / close * 100 : 0;
+  const volLabel = volume >= 10000 ? '量大' : (volume >= 3000 ? '量中等' : '量平淡');
+  const ampLabel = ampPct >= 8 ? '波動劇烈' : (ampPct >= 4 ? '波動大' : '波動溫和');
+  const note = ampPct >= 6
+    ? `${volLabel}，${ampLabel}，適合短線快進快出`
+    : `${volLabel}，${ampLabel}，留意急拉急跌風險`;
+
+  let score = 0;
+  if(Math.abs(distPct) >= 3) score += 2; else if(Math.abs(distPct) >= 1) score += 1;
+  if(volume >= 10000) score += 1;
+  if(foreignNetBuy !== null && foreignNetBuy !== undefined){
+    if(foreignNetBuy >= 5000) score += 2; else if(foreignNetBuy >= 1000) score += 1;
+  }
+  score = Math.max(1, Math.min(5, score));
+  const strengthWord = score >= 4 ? '強' : (score >= 2 ? '中' : '弱');
+
+  return { ...lv, direction, directionLabel, entryCond, entryLow, entryHigh,
+           stopLossLabel, target1Label, target2Label, note, stars: score, strengthWord };
+}
+
+function starString(n){
+  return '★'.repeat(n) + '☆'.repeat(5 - n);
+}
+
+function renderScenarioBody(card){
+  const high = parseFloat(card.querySelector('.oh').value);
+  const low = parseFloat(card.querySelector('.ol').value);
+  const close = parseFloat(card.querySelector('.oc').value);
+  const volume = parseFloat(card.querySelector('.ov').value) || 0;
+  const foreignRaw = card.dataset.foreign;
+  const foreignNetBuy = foreignRaw === 'null' ? null : parseFloat(foreignRaw);
+  const body = card.querySelector('.sc-body');
+
+  if([high, low, close].some(v => Number.isNaN(v))){
+    body.innerHTML = '<p class="hint">請輸入有效的昨高/昨低/昨收數字</p>';
+    return;
+  }
+
+  const sc = computeScenario(high, low, close, volume, foreignNetBuy);
+
+  body.innerHTML = `
+    <div class="cdp-row">
+      <div class="cdp-box ah"><span class="name">AH</span><span class="val mono">${fmt(sc.ah)}</span></div>
+      <div class="cdp-box nh"><span class="name">NH</span><span class="val mono">${fmt(sc.nh)}</span></div>
+      <div class="cdp-box cdp"><span class="name">CDP</span><span class="val mono">${fmt(sc.cdp)}</span></div>
+      <div class="cdp-box nl"><span class="name">NL</span><span class="val mono">${fmt(sc.nl)}</span></div>
+      <div class="cdp-box al"><span class="name">AL</span><span class="val mono">${fmt(sc.al)}</span></div>
+    </div>
+    <div class="sc-fields">
+      <div class="row"><span class="k">劇本方向</span><span class="v ${sc.direction}">${sc.directionLabel}</span></div>
+      <div class="row"><span class="k">進場條件</span><span class="v">${sc.entryCond}</span></div>
+      <div class="row"><span class="k">進場價參考</span><span class="v mono">${sc.entryLow !== null ? fmt(sc.entryLow) + ' ~ ' + fmt(sc.entryHigh) + ' 元' : '—'}</span></div>
+      <div class="row"><span class="k">停損價</span><span class="v down">${sc.stopLossLabel}</span></div>
+      <div class="row"><span class="k">第一目標</span><span class="v up">${sc.target1Label}</span></div>
+      <div class="row"><span class="k">第二目標</span><span class="v up">${sc.target2Label}</span></div>
+      <div class="row"><span class="k">星等評分</span><span class="v mono">${starString(sc.stars)} ${sc.strengthWord}</span></div>
+      <div class="row"><span class="k">備註</span><span class="v">${sc.note}</span></div>
+    </div>
+  `;
+}
+
+function buildScenarioCard(row){
+  const code = row.code, name = row.name || '';
+  const pctText = (row.changePct === null || row.changePct === undefined) ? '—' : (row.changePct > 0 ? '+' : '') + row.changePct.toFixed(2) + '%';
+  const pctClass = (row.changePct ?? 0) >= 0 ? 'up' : 'down';
+  const hasForeign = row.foreignNetBuy !== null && row.foreignNetBuy !== undefined;
+  const foreignText = hasForeign ? Math.round(row.foreignNetBuy).toLocaleString() + ' 張' : '—';
+  const foreignClass = hasForeign && row.foreignNetBuy >= 0 ? 'up' : 'down';
+
+  const div = document.createElement('div');
+  div.className = 'scenario-card';
+  div.dataset.code = code;
+  div.dataset.foreign = hasForeign ? String(row.foreignNetBuy) : 'null';
+
+  div.innerHTML = `
+    <div class="sc-head">
+      <div class="sc-title"><span class="sc-name">${name}</span><span class="sc-code mono">${code}</span></div>
+      <div class="sc-badges">
+        <span class="badge pct ${pctClass}">${pctText}</span>
+        <span class="badge mono">量 ${row.volume ? Math.round(row.volume).toLocaleString() : '—'} 張</span>
+      </div>
+      <div class="sc-badges">
+        <span class="badge foreign ${foreignClass}">外資買超 ${foreignText}</span>
+      </div>
+    </div>
+    <div class="sc-ohlc">
+      <div><label>昨收</label><input type="number" class="oc" step="0.01" value="${row.close ?? ''}"></div>
+      <div><label>昨高</label><input type="number" class="oh" step="0.01" value="${row.high ?? ''}"></div>
+      <div><label>昨低</label><input type="number" class="ol" step="0.01" value="${row.low ?? ''}"></div>
+      <div><label>量(張)</label><input type="number" class="ov" step="1" value="${row.volume ?? ''}"></div>
+    </div>
+    <p class="hint" style="margin:6px 0 10px;">↑ 可直接改這幾個數字，CDP/AH/NH/NL/AL與進場價位會自動重算</p>
+    <div class="sc-body"></div>
+    <button class="secondary live-btn" type="button">▶ 開始即時報價</button>
+    <div class="live-display status"></div>
+  `;
+
+  ['oc', 'oh', 'ol', 'ov'].forEach(cls => {
+    div.querySelector('.' + cls).addEventListener('input', () => renderScenarioBody(div));
+  });
+  div.querySelector('.live-btn').addEventListener('click', () => toggleLiveQuote(div));
+
+  renderScenarioBody(div);
+  return div;
+}
+
+// ============================================================
+// 即時報價（盤中試著直連證交所，被瀏覽器CORS擋住就改開官方頁面）
+// ============================================================
+const liveTimers = new WeakMap();
+
+async function pollLiveQuote(card){
+  const code = card.dataset.code;
+  const displayEl = card.querySelector('.live-display');
+  try{
+    const url = `https://mis.twse.com.tw/stock/api/getStockInfo.jsp?ex_ch=tse_${code}.tw&json=1`;
+    const res = await fetch(url);
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    const info = json.msgArray && json.msgArray[0];
+    if(!info || !info.z || info.z === '-' || info.z === ''){
+      throw new Error('目前沒有即時成交價（可能不在交易時間）');
+    }
+    displayEl.className = 'status ok';
+    displayEl.textContent = `即時成交：${parseFloat(info.z).toFixed(2)} 元（${info.t || ''}）`;
+  }catch(err){
+    clearInterval(liveTimers.get(card));
+    liveTimers.delete(card);
+    card.querySelector('.live-btn').textContent = '▶ 開始即時報價';
+    displayEl.className = 'status err';
+    displayEl.innerHTML = `瀏覽器擋住即時資料或非交易時間。<a href="https://mis.twse.com.tw/stock/index.jsp?stock=${code}" target="_blank" rel="noopener" style="color:var(--amber)">點此開官方頁面查看 →</a>`;
+  }
+}
+
+function toggleLiveQuote(card){
+  const btn = card.querySelector('.live-btn');
+  if(liveTimers.has(card)){
+    clearInterval(liveTimers.get(card));
+    liveTimers.delete(card);
+    btn.textContent = '▶ 開始即時報價';
+    card.querySelector('.live-display').textContent = '';
+    return;
+  }
+  btn.textContent = '■ 停止即時報價';
+  pollLiveQuote(card);
+  liveTimers.set(card, setInterval(() => pollLiveQuote(card), 5000));
+}
+
+function renderResultsCards(rows){
+  const container = document.getElementById('resultsList');
   const empty = document.getElementById('resultsEmpty');
-  body.innerHTML = '';
+  container.innerHTML = '';
 
   if(!rows.length){
-    table.style.display = 'none';
+    container.style.display = 'none';
     empty.style.display = 'block';
     empty.textContent = '沒有股票符合目前的門檻，試著調低漲跌幅、成交量或外資買超門檻。';
     return;
   }
   empty.style.display = 'none';
-  table.style.display = 'table';
+  container.style.display = 'block';
 
   for(const r of rows){
     if(r.high === undefined || r.low === undefined || r.close === undefined) continue;
-    const lv = calcCDP(r.high, r.low, r.close);
-    const tr = document.createElement('tr');
-    const pctClass = (r.changePct ?? 0) >= 0 ? 'up' : 'down';
-    const pctText = r.changePct === null || r.changePct === undefined ? '—' : (r.changePct>0?'+':'')+r.changePct.toFixed(2)+'%';
-    const foreignText = (r.foreignNetBuy === null || r.foreignNetBuy === undefined) ? '—' : Math.round(r.foreignNetBuy).toLocaleString();
-    const foreignClass = (r.foreignNetBuy ?? 0) >= 0 ? 'up' : 'down';
-    tr.innerHTML = `
-      <td>${r.code}</td>
-      <td>${r.name ?? ''}</td>
-      <td>${fmt(r.close)}</td>
-      <td class="pct ${pctClass}">${pctText}</td>
-      <td>${r.volume ? Math.round(r.volume).toLocaleString() : '—'}</td>
-      <td class="pct ${foreignClass}">${foreignText}</td>
-      <td>${fmt(lv.cdp)}</td>
-      <td>${fmt(lv.ah)}</td>
-      <td>${fmt(lv.nh)}</td>
-      <td>${fmt(lv.nl)}</td>
-      <td>${fmt(lv.al)}</td>
-    `;
-    body.appendChild(tr);
+    container.appendChild(buildScenarioCard(r));
   }
 }
 
@@ -431,6 +627,27 @@ function toROCDateParts(isoDate){
   return { rocY: y - 1911, m, d, gregY: y };
 }
 
+async function fetchForeignNetBuyForDate(code, apiDateStr){
+  try{
+    const url = `https://www.twse.com.tw/fund/T86?response=json&date=${apiDateStr}&selectType=ALL`;
+    const res = await fetch(url);
+    if(!res.ok) return null;
+    const json = await res.json();
+    if(!json.fields || !json.data) return null;
+    const fields = json.fields;
+    const idx = name => fields.findIndex(f => f.includes(name));
+    const codeI = idx('證券代號'), fb1I = idx('外陸資買賣超股數'), fb2I = idx('外資自營商買賣超股數');
+    if(codeI < 0) return null;
+    const row = json.data.find(r => String(r[codeI]).trim() === code);
+    if(!row) return null;
+    const v1 = fb1I >= 0 ? parseFloat(String(row[fb1I]).replace(/,/g,'')) || 0 : 0;
+    const v2 = fb2I >= 0 ? parseFloat(String(row[fb2I]).replace(/,/g,'')) || 0 : 0;
+    return Math.round((v1 + v2) / 1000 * 10) / 10;
+  }catch(e){
+    return null;
+  }
+}
+
 document.getElementById('btnQueryStock').addEventListener('click', async () => {
   const statusEl = document.getElementById('queryStatus');
   const ladderEl = document.getElementById('ladderResult');
@@ -456,7 +673,8 @@ document.getElementById('btnQueryStock').addEventListener('click', async () => {
 
     const fields = json.fields;
     const idx = name => fields.findIndex(f => f.includes(name));
-    const dateIdx = idx('日期'), highIdx = idx('最高'), lowIdx = idx('最低'), closeIdx = idx('收盤');
+    const dateIdx = idx('日期'), highIdx = idx('最高'), lowIdx = idx('最低'),
+          closeIdx = idx('收盤'), volIdx = idx('成交股數'), chgIdx = idx('漲跌價差');
 
     const targetDate = `${rocY}/${String(m).padStart(2,'0')}/${String(d).padStart(2,'0')}`;
     const row = json.data.find(r => r[dateIdx] === targetDate);
@@ -465,18 +683,29 @@ document.getElementById('btnQueryStock').addEventListener('click', async () => {
     const high = parseFloat(String(row[highIdx]).replace(/,/g,''));
     const low = parseFloat(String(row[lowIdx]).replace(/,/g,''));
     const close = parseFloat(String(row[closeIdx]).replace(/,/g,''));
-    const lv = calcCDP(high, low, close);
+    const volShares = volIdx >= 0 ? parseFloat(String(row[volIdx]).replace(/,/g,'')) : NaN;
+    const volume = Number.isNaN(volShares) ? null : volShares / 1000;
 
-    ladderEl.innerHTML = `
-      <div class="ladder">
-        <div class="lv ah"><span class="name">AH 最高壓力</span><span class="val mono">${fmt(lv.ah)}</span></div>
-        <div class="lv nh"><span class="name">NH 強壓力區</span><span class="val mono">${fmt(lv.nh)}</span></div>
-        <div class="lv cdp"><span class="name">CDP 中軸價位</span><span class="val mono">${fmt(lv.cdp)}</span></div>
-        <div class="lv nl"><span class="name">NL 強支撐區</span><span class="val mono">${fmt(lv.nl)}</span></div>
-        <div class="lv al"><span class="name">AL 最低支撐</span><span class="val mono">${fmt(lv.al)}</span></div>
-      </div>`;
+    let changePct = null;
+    if(chgIdx >= 0){
+      const chg = parseFloat(String(row[chgIdx]).replace(/,/g,''));
+      if(!Number.isNaN(chg) && (close - chg) !== 0) changePct = Math.round((chg / (close - chg)) * 10000) / 100;
+    }
+
+    let name = '';
+    if(json.title){
+      const nameMatch = json.title.match(/\d{4,6}\s+(\S+?)\s*每日/);
+      if(nameMatch) name = nameMatch[1];
+    }
+
+    statusEl.textContent = '已取得股價，正在查外資買超…';
+    const apiDateExact = `${gregY}${String(m).padStart(2,'0')}${String(d).padStart(2,'0')}`;
+    const foreignNetBuy = await fetchForeignNetBuyForDate(code, apiDateExact);
+
+    ladderEl.innerHTML = '';
+    ladderEl.appendChild(buildScenarioCard({ code, name, high, low, close, volume, changePct, foreignNetBuy }));
     statusEl.className = 'status ok';
-    statusEl.textContent = `${targetDate} 收盤 ${fmt(close)}（高 ${fmt(high)} / 低 ${fmt(low)}）→ 以上為下一個交易日參考價位`;
+    statusEl.textContent = `${targetDate} 收盤 ${fmt(close)} → 以上為下一個交易日參考價位`;
   }catch(err){
     statusEl.className = 'status err';
     statusEl.textContent = '查詢失敗：' + err.message + '（多半是瀏覽器跨網域限制，可改用手動貼上方式）';
