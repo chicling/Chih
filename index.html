@@ -198,9 +198,13 @@
   <!-- Step 1 -->
   <section class="card" id="settingsCard">
     <h2><span class="tag">STEP 1</span> 設定條件</h2>
-    <p class="hint">用最近一個交易日的自動資料，篩出符合門檻的股票，算出它們「下一個交易日」要用的 CDP 價位。</p>
+    <p class="hint">選一個資料日期（留空=最新一個交易日），篩出符合門檻的股票，算出它們「下一個交易日」要用的 CDP 價位。選過去的日期可以用來回測「那天適合做多還是做空」。</p>
 
-    <div class="row2">
+    <label for="dataDate">資料日期（留空 = 最新）</label>
+    <input type="date" id="dataDate">
+    <p class="hint" style="margin:6px 0 0;">留空：讀取排程自動抓的最新資料（最快）。選日期：即時連證交所查那天的全市場資料（含外資買超），可查任何過去的交易日。</p>
+
+    <div class="row2" style="margin-top:14px;">
       <div>
         <label for="gainThreshold">漲跌幅門檻 (%, 絕對值)</label>
         <input type="number" id="gainThreshold" value="3" step="0.5" min="0">
@@ -223,7 +227,7 @@
     </select>
     <p class="hint" style="margin:6px 0 0;">外資買賣超資料公布較晚（常常要到晚上才出來），如果這項抓不到，股票仍會照常顯示，只是外資買超那一欄會是「—」。</p>
 
-    <button class="primary" id="btnLoadAuto">讀取每日自動更新資料</button>
+    <button class="primary" id="btnLoadAuto">讀取資料</button>
     <div class="status" id="autoStatus"></div>
 
     <details>
@@ -259,7 +263,7 @@
     <p class="hint">符合門檻的股票，依漲跌幅排序，每張卡片可直接改昨收/昨高/昨低/量即時重算。</p>
     <div class="status" id="tradeDateLine" style="margin-top:0;"></div>
     <div id="resultsList" style="display:none;"></div>
-    <div class="empty" id="resultsEmpty">還沒有資料 — 先按上面「讀取每日自動更新資料」或下面手動貼上。</div>
+    <div class="empty" id="resultsEmpty">還沒有資料 — 先按上面「讀取資料」或下面手動貼上。</div>
   </section>
 
   <!-- 手動貼上 -->
@@ -559,27 +563,141 @@ function renderResultsCards(rows){
   }
 }
 
+// ============================================================
+// 歷史日期：直連證交所抓指定日期的全市場資料 + 外資買賣超
+// ============================================================
+async function fetchForeignNetBuyMapForDate(apiDateStr){
+  try{
+    const url = `https://www.twse.com.tw/fund/T86?response=json&date=${apiDateStr}&selectType=ALL`;
+    const res = await fetch(url);
+    if(!res.ok) return {};
+    const json = await res.json();
+    if(!json.fields || !json.data) return {};
+    const fields = json.fields;
+    const idx = name => fields.findIndex(f => f.includes(name));
+    const codeI = idx('證券代號'), fb1I = idx('外陸資買賣超股數'), fb2I = idx('外資自營商買賣超股數');
+    if(codeI < 0) return {};
+    const map = {};
+    for(const row of json.data){
+      const code = String(row[codeI]).trim();
+      const v1 = fb1I >= 0 ? (parseFloat(String(row[fb1I]).replace(/,/g,'')) || 0) : 0;
+      const v2 = fb2I >= 0 ? (parseFloat(String(row[fb2I]).replace(/,/g,'')) || 0) : 0;
+      map[code] = Math.round((v1 + v2) / 1000 * 10) / 10;
+    }
+    return map;
+  }catch(e){
+    return {};
+  }
+}
+
+async function fetchHistoricalMarketData(apiDateStr){
+  const url = `https://www.twse.com.tw/exchangeReport/MI_INDEX?response=json&date=${apiDateStr}&type=ALL`;
+  const res = await fetch(url);
+  if(!res.ok) throw new Error('HTTP ' + res.status);
+  const json = await res.json();
+
+  // 證交所這個API把好幾張表塞在同一個回應裡(fields1/data1...fields9/data9)，
+  // 用內容找出「個股收盤行情」那一張表，不依賴固定編號(避免證交所改版就失效)
+  let table = null;
+  for(const key of Object.keys(json)){
+    if(key.startsWith('fields')){
+      const f = json[key];
+      if(Array.isArray(f) && f.some(x => String(x).includes('證券代號')) && f.some(x => String(x).includes('收盤'))){
+        const dataKey = key.replace('fields', 'data');
+        if(Array.isArray(json[dataKey])){
+          table = { fields: f, data: json[dataKey] };
+          break;
+        }
+      }
+    }
+  }
+  if(!table) throw new Error('這天的資料裡找不到個股收盤表（可能不是交易日，或證交所格式又變了）');
+
+  const fields = table.fields;
+  const idx = name => fields.findIndex(f => String(f).includes(name));
+  const codeI = idx('證券代號'), nameI = idx('證券名稱'), highI = idx('最高'),
+        lowI = idx('最低'), closeI = idx('收盤'), volI = idx('成交股數'),
+        diffI = idx('漲跌價差');
+  const signI = fields.findIndex(f => String(f).includes('漲跌') && !String(f).includes('價差'));
+
+  const toNum = s => {
+    if(s === undefined || s === null) return null;
+    const n = parseFloat(String(s).replace(/,/g,''));
+    return Number.isNaN(n) ? null : n;
+  };
+
+  const rows = [];
+  for(const row of table.data){
+    const code = codeI >= 0 ? String(row[codeI]).trim() : null;
+    const close = toNum(row[closeI]);
+    const high = toNum(row[highI]);
+    const low = toNum(row[lowI]);
+    if(!code || close === null || high === null || low === null) continue;
+
+    const volShares = volI >= 0 ? toNum(row[volI]) : null;
+    const volume = volShares !== null ? volShares / 1000 : null;
+
+    let changePct = null;
+    if(diffI >= 0){
+      let diff = toNum(row[diffI]);
+      if(diff !== null){
+        if(signI >= 0){
+          const s = String(row[signI]).trim();
+          if(s === '-') diff = -Math.abs(diff);
+          else if(s === '+') diff = Math.abs(diff);
+        }
+        const prevClose = close - diff;
+        if(prevClose) changePct = Math.round((diff / prevClose) * 10000) / 100;
+      }
+    }
+    rows.push({ code, name: nameI >= 0 ? row[nameI] : '', high, low, close, volume, changePct });
+  }
+  return rows;
+}
+
 document.getElementById('btnLoadAuto').addEventListener('click', async () => {
   const statusEl = document.getElementById('autoStatus');
+  const dateLine = document.getElementById('tradeDateLine');
+  const pickedDate = document.getElementById('dataDate').value; // '' 或 'YYYY-MM-DD'
   statusEl.className = 'status';
   statusEl.textContent = '讀取中…';
+
   try{
-    const res = await fetch('./data/latest.json', {cache:'no-store'});
-    if(!res.ok) throw new Error('HTTP ' + res.status);
-    const json = await res.json();
-    const rows = (json.rows || []).map(r => ({
-      code: r.code, name: r.name, close: r.close, high: r.high, low: r.low,
-      changePct: r.changePct, volume: r.volume, foreignNetBuy: r.foreignNetBuy,
-    }));
+    let rows, tradeDateStr, updatedAtStr = null;
+
+    if(!pickedDate){
+      const res = await fetch('./data/latest.json', {cache:'no-store'});
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      const json = await res.json();
+      rows = (json.rows || []).map(r => ({
+        code: r.code, name: r.name, close: r.close, high: r.high, low: r.low,
+        changePct: r.changePct, volume: r.volume, foreignNetBuy: r.foreignNetBuy,
+      }));
+      tradeDateStr = json.tradeDate;
+      updatedAtStr = json.updatedAt;
+    } else {
+      const apiDateStr = pickedDate.replace(/-/g, '');
+      statusEl.textContent = `正在連線證交所抓 ${pickedDate} 的歷史資料…`;
+      const marketRows = await fetchHistoricalMarketData(apiDateStr);
+      statusEl.textContent = `已取得股價資料，正在查 ${pickedDate} 的外資買賣超…`;
+      const foreignMap = await fetchForeignNetBuyMapForDate(apiDateStr);
+      rows = marketRows.map(r => ({ ...r, foreignNetBuy: foreignMap[r.code] ?? null }));
+      tradeDateStr = apiDateStr;
+    }
+
     lastRows = rows;
     applyFilterAndRender(rows);
-    const ts = json.updatedAt ? new Date(json.updatedAt).toLocaleString('zh-TW', {timeZone:'Asia/Taipei'}) : '未知';
-    statusEl.className = 'status ok';
-    statusEl.textContent = `讀取成功，共 ${rows.length} 筆。資料更新時間：${ts}`;
 
-    const dateLine = document.getElementById('tradeDateLine');
-    if(json.tradeDate){
-      const d = String(json.tradeDate);
+    statusEl.className = 'status ok';
+    if(updatedAtStr){
+      const ts = new Date(updatedAtStr).toLocaleString('zh-TW', {timeZone:'Asia/Taipei'});
+      statusEl.textContent = `讀取成功，共 ${rows.length} 筆。資料更新時間：${ts}`;
+    }else{
+      statusEl.textContent = `讀取成功，共 ${rows.length} 筆（指定日期 ${pickedDate} 的歷史資料，直連證交所）`;
+    }
+
+    if(tradeDateStr){
+      const d = String(tradeDateStr);
       const niceDate = d.length === 8 ? `${d.slice(0,4)}-${d.slice(4,6)}-${d.slice(6,8)}` : d;
       dateLine.className = 'status';
       dateLine.textContent = `資料日期：${niceDate}（股票的最高/最低/收盤、外資買超都是這一天的）`;
@@ -588,7 +706,10 @@ document.getElementById('btnLoadAuto').addEventListener('click', async () => {
     }
   }catch(err){
     statusEl.className = 'status err';
-    statusEl.textContent = '讀取失敗：' + err.message + '（可能是 data/latest.json 還沒被排程產生過，到 repo 的 Actions 分頁手動 Run workflow 一次；或改用下面手動貼上）';
+    const extra = pickedDate
+      ? '（指定日期的歷史資料抓取失敗，可能該日不是交易日，或被瀏覽器跨網域限制擋住，可改用下面手動貼上）'
+      : '（可能是 data/latest.json 還沒被排程產生過，到 repo 的 Actions 分頁手動 Run workflow 一次；或改用下面手動貼上）';
+    statusEl.textContent = '讀取失敗：' + err.message + extra;
   }
 });
 
