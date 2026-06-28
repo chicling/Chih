@@ -591,7 +591,9 @@ async function fetchForeignNetBuyMapForDate(apiDateStr){
 }
 
 async function fetchHistoricalMarketData(apiDateStr){
-  const url = `https://www.twse.com.tw/exchangeReport/MI_INDEX?response=json&date=${apiDateStr}&type=ALL`;
+  // 注意：type=ALL 在某些日期可能只回傳大盤統計表，沒有個股明細；
+  // type=ALLBUT0999 才是公開教學文件裡確認過、會包含個股逐筆收盤表的版本。
+  const url = `https://www.twse.com.tw/exchangeReport/MI_INDEX?response=json&date=${apiDateStr}&type=ALLBUT0999`;
   const res = await fetch(url);
   if(!res.ok) throw new Error('HTTP ' + res.status);
   const json = await res.json();
@@ -611,7 +613,10 @@ async function fetchHistoricalMarketData(apiDateStr){
       }
     }
   }
-  if(!table) throw new Error('這天的資料裡找不到個股收盤表（可能不是交易日，或證交所格式又變了）');
+  if(!table){
+    const debugKeys = Object.keys(json).join(', ');
+    throw new Error(`這天的資料裡找不到個股收盤表（可能不是交易日，或證交所格式又變了）。回應的欄位有：${debugKeys || '(空)'}`);
+  }
 
   const fields = table.fields;
   const idx = name => fields.findIndex(f => String(f).includes(name));
