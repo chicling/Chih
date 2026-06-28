@@ -598,24 +598,43 @@ async function fetchHistoricalMarketData(apiDateStr){
   if(!res.ok) throw new Error('HTTP ' + res.status);
   const json = await res.json();
 
-  // 證交所這個API把好幾張表塞在同一個回應裡(fields1/data1...fields9/data9)，
-  // 用內容找出「個股收盤行情」那一張表，不依賴固定編號(避免證交所改版就失效)
   let table = null;
-  for(const key of Object.keys(json)){
-    if(key.startsWith('fields')){
-      const f = json[key];
+  let debugInfo = '';
+
+  // 新版格式：證交所把每張表包成 tables 陣列，每個元素自己有 fields/data
+  if(Array.isArray(json.tables)){
+    debugInfo = 'tables[' + json.tables.length + ']: ' +
+      json.tables.map((t, i) => `#${i}(${Array.isArray(t.fields) ? t.fields.slice(0,4).join('/') : '無fields'})`).join(' ');
+    for(const t of json.tables){
+      const f = t.fields;
       if(Array.isArray(f) && f.some(x => String(x).includes('證券代號')) && f.some(x => String(x).includes('收盤'))){
-        const dataKey = key.replace('fields', 'data');
-        if(Array.isArray(json[dataKey])){
-          table = { fields: f, data: json[dataKey] };
+        if(Array.isArray(t.data)){
+          table = { fields: f, data: t.data };
           break;
         }
       }
     }
   }
+
+  // 舊版格式：fields1/data1...fields9/data9 散落在最上層，當作備援嘗試
   if(!table){
-    const debugKeys = Object.keys(json).join(', ');
-    throw new Error(`這天的資料裡找不到個股收盤表（可能不是交易日，或證交所格式又變了）。回應的欄位有：${debugKeys || '(空)'}`);
+    for(const key of Object.keys(json)){
+      if(key.startsWith('fields')){
+        const f = json[key];
+        if(Array.isArray(f) && f.some(x => String(x).includes('證券代號')) && f.some(x => String(x).includes('收盤'))){
+          const dataKey = key.replace('fields', 'data');
+          if(Array.isArray(json[dataKey])){
+            table = { fields: f, data: json[dataKey] };
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  if(!table){
+    const topKeys = Object.keys(json).join(', ');
+    throw new Error(`這天的資料裡找不到個股收盤表（可能不是交易日，或證交所格式又變了）。頂層欄位：${topKeys || '(空)'}。${debugInfo}`);
   }
 
   const fields = table.fields;
