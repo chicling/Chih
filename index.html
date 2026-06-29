@@ -618,8 +618,11 @@ function buildScenarioCard(row){
       <label class="chk-row bonus"><input type="checkbox" class="chk-bonus" data-key="fundflow"> 市場資金聚焦</label>
     </div>
 
-    <button class="secondary live-btn" type="button">▶ 開始即時報價</button>
-    <div class="live-display status"></div>
+    <p class="hint" style="margin:10px 0 6px;">即時報價：證交所的即時資料有跨網域限制，網頁本身抓不到，下面兩個按鈕會直接開外部頁面看即時股價。</p>
+    <div class="row2">
+      <button class="secondary live-btn-twse" type="button">證交所即時</button>
+      <button class="secondary live-btn-yahoo" type="button">Yahoo股市即時</button>
+    </div>
   `;
 
   ['oc', 'oh', 'ol', 'ov'].forEach(cls => {
@@ -631,53 +634,16 @@ function buildScenarioCard(row){
   div.querySelectorAll('.chk-manual').forEach(c => {
     c.addEventListener('change', () => updateWinRate(div));
   });
-  div.querySelector('.live-btn').addEventListener('click', () => toggleLiveQuote(div));
+  div.querySelector('.live-btn-twse').addEventListener('click', () => {
+    window.open(`https://mis.twse.com.tw/stock/index.jsp?stock=${code}`, '_blank', 'noopener');
+  });
+  div.querySelector('.live-btn-yahoo').addEventListener('click', () => {
+    window.open(`https://tw.stock.yahoo.com/quote/${code}.TW`, '_blank', 'noopener');
+  });
 
   renderScenarioBody(div);
   updateAutoChecklist(div);
   return div;
-}
-
-// ============================================================
-// 即時報價（盤中試著直連證交所，被瀏覽器CORS擋住就改開官方頁面）
-// ============================================================
-const liveTimers = new WeakMap();
-
-async function pollLiveQuote(card){
-  const code = card.dataset.code;
-  const displayEl = card.querySelector('.live-display');
-  try{
-    const url = `https://mis.twse.com.tw/stock/api/getStockInfo.jsp?ex_ch=tse_${code}.tw&json=1`;
-    const res = await fetch(url);
-    if(!res.ok) throw new Error('HTTP ' + res.status);
-    const json = await res.json();
-    const info = json.msgArray && json.msgArray[0];
-    if(!info || !info.z || info.z === '-' || info.z === ''){
-      throw new Error('目前沒有即時成交價（可能不在交易時間）');
-    }
-    displayEl.className = 'status ok';
-    displayEl.textContent = `即時成交：${parseFloat(info.z).toFixed(2)} 元（${info.t || ''}）`;
-  }catch(err){
-    clearInterval(liveTimers.get(card));
-    liveTimers.delete(card);
-    card.querySelector('.live-btn').textContent = '▶ 開始即時報價';
-    displayEl.className = 'status err';
-    displayEl.innerHTML = `瀏覽器擋住即時資料或非交易時間。<a href="https://mis.twse.com.tw/stock/index.jsp?stock=${code}" target="_blank" rel="noopener" style="color:var(--amber)">點此開官方頁面查看 →</a>`;
-  }
-}
-
-function toggleLiveQuote(card){
-  const btn = card.querySelector('.live-btn');
-  if(liveTimers.has(card)){
-    clearInterval(liveTimers.get(card));
-    liveTimers.delete(card);
-    btn.textContent = '▶ 開始即時報價';
-    card.querySelector('.live-display').textContent = '';
-    return;
-  }
-  btn.textContent = '■ 停止即時報價';
-  pollLiveQuote(card);
-  liveTimers.set(card, setInterval(() => pollLiveQuote(card), 5000));
 }
 
 function renderResultsCards(rows){
