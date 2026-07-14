@@ -14,165 +14,123 @@
     --hairline:#2A2F36;
     --paper:#ECE8E0;
     --muted:#878D96;
-    --up:#FF5C5C;      /* 台股慣例：紅漲 */
-    --down:#2BB673;    /* 台股慣例：綠跌 */
+    --up:#FF5C5C;
+    --down:#2BB673;
     --amber:#E3A23D;
     --radius:10px;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;background:var(--ink);color:var(--paper);
     font-family:'Inter',system-ui,-apple-system,sans-serif;
-    -webkit-tap-highlight-color: transparent;}
+    -webkit-tap-highlight-color:transparent;}
   body{padding-bottom:48px;}
-
   h1,h2,h3{font-family:'Space Grotesk',sans-serif;margin:0;}
   .mono{font-family:'IBM Plex Mono',monospace;}
 
-  header.top{
-    padding:28px 18px 22px;
-    border-bottom:1px solid var(--hairline);
-    background:linear-gradient(180deg, #11141A 0%, var(--ink) 100%);
-  }
-  header.top .eyebrow{
-    color:var(--amber);font-size:12px;letter-spacing:.14em;text-transform:uppercase;
-    font-family:'IBM Plex Mono',monospace;margin-bottom:8px;
-  }
+  header.top{padding:28px 18px 22px;border-bottom:1px solid var(--hairline);
+    background:linear-gradient(180deg,#11141A 0%,var(--ink) 100%);}
+  header.top .eyebrow{color:var(--amber);font-size:12px;letter-spacing:.14em;
+    text-transform:uppercase;font-family:'IBM Plex Mono',monospace;margin-bottom:8px;}
   header.top h1{font-size:22px;line-height:1.3;font-weight:700;}
   header.top .sub{color:var(--muted);font-size:13.5px;margin-top:8px;line-height:1.55;}
-  header.top .clock{
-    margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--paper);
-    display:flex;gap:14px;flex-wrap:wrap;
-  }
+  header.top .clock{margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:13px;
+    color:var(--paper);display:flex;gap:14px;flex-wrap:wrap;}
   header.top .clock span.dot{color:var(--amber);}
 
   main{padding:18px 16px 12px;max-width:640px;margin:0 auto;}
 
-  section.card{
-    background:var(--panel);
-    border:1px solid var(--hairline);
-    border-radius:var(--radius);
-    padding:18px 16px;
-    margin-bottom:18px;
-  }
-  section.card h2{
-    font-size:15px;font-weight:700;color:var(--paper);
-    display:flex;align-items:center;gap:8px;margin-bottom:4px;
-  }
-  section.card h2 .tag{
-    font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--amber);
-    border:1px solid var(--amber);border-radius:999px;padding:2px 8px;
-  }
+  section.card{background:var(--panel);border:1px solid var(--hairline);
+    border-radius:var(--radius);padding:18px 16px;margin-bottom:18px;}
+  section.card h2{font-size:15px;font-weight:700;color:var(--paper);
+    display:flex;align-items:center;gap:8px;margin-bottom:4px;}
+  section.card h2 .tag{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--amber);
+    border:1px solid var(--amber);border-radius:999px;padding:2px 8px;}
   section.card p.hint{color:var(--muted);font-size:12.5px;line-height:1.6;margin:6px 0 14px;}
 
   label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:5px;margin-top:12px;}
   label:first-of-type{margin-top:0;}
-  input[type=date], input[type=number], input[type=text], textarea, select{
+  input[type=date],input[type=number],input[type=text],textarea,select{
     width:100%;background:var(--panel-2);border:1px solid var(--hairline);
     color:var(--paper);border-radius:8px;padding:10px 11px;font-size:14.5px;
-    font-family:'IBM Plex Mono',monospace;
-  }
+    font-family:'IBM Plex Mono',monospace;}
   textarea{font-family:'IBM Plex Mono',monospace;font-size:12.5px;min-height:110px;resize:vertical;}
-  input:focus, textarea:focus, select:focus{outline:2px solid var(--amber);outline-offset:1px;}
+  input:focus,textarea:focus,select:focus{outline:2px solid var(--amber);outline-offset:1px;}
 
   .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
 
-  button{
-    font-family:'Inter',sans-serif;font-weight:600;font-size:14px;
+  button{font-family:'Inter',sans-serif;font-weight:600;font-size:14px;
     border-radius:8px;padding:11px 16px;border:1px solid transparent;
-    cursor:pointer;width:100%;margin-top:14px;
-  }
+    cursor:pointer;width:100%;margin-top:14px;}
   button.primary{background:var(--amber);color:#1A1304;}
   button.primary:active{opacity:.85;}
   button.secondary{background:transparent;color:var(--paper);border:1px solid var(--hairline);}
   button.secondary:active{background:var(--panel-2);}
-  button.ghost{background:transparent;color:var(--muted);border:1px dashed var(--hairline);font-size:13px;}
-  button:disabled{opacity:.45;cursor:not-allowed;}
 
   .status{font-size:12.5px;color:var(--muted);margin-top:10px;font-family:'IBM Plex Mono',monospace;}
   .status.err{color:var(--up);}
   .status.ok{color:var(--down);}
 
-  /* 價格梯 ladder */
-  .ladder{margin-top:16px;border-radius:8px;overflow:hidden;border:1px solid var(--hairline);}
-  .ladder .lv{
-    display:flex;justify-content:space-between;align-items:center;
-    padding:10px 12px;font-family:'IBM Plex Mono',monospace;font-size:13.5px;
-    border-bottom:1px solid var(--hairline);background:var(--panel-2);
-  }
-  .ladder .lv:last-child{border-bottom:none;}
-  .ladder .lv .name{color:var(--muted);font-size:11.5px;letter-spacing:.06em;}
-  .ladder .lv .val{font-weight:600;font-size:15px;}
-  .ladder .lv.ah .val, .ladder .lv.nh .val{color:var(--up);}
-  .ladder .lv.cdp{background:#20180A;}
-  .ladder .lv.cdp .val{color:var(--amber);font-size:16px;}
-  .ladder .lv.nl .val, .ladder .lv.al .val{color:var(--down);}
-
-  table{width:100%;border-collapse:collapse;margin-top:6px;font-size:12.5px;}
-  table thead th{
-    text-align:right;color:var(--muted);font-weight:500;font-size:11px;
-    padding:6px 6px;border-bottom:1px solid var(--hairline);
-    font-family:'IBM Plex Mono',monospace;letter-spacing:.04em;white-space:nowrap;
-  }
-  table thead th:first-child, table thead th:nth-child(2){text-align:left;}
-  table tbody td{
-    text-align:right;padding:8px 6px;border-bottom:1px solid var(--hairline);
-    font-family:'IBM Plex Mono',monospace;white-space:nowrap;
-  }
-  table tbody td:first-child{text-align:left;font-weight:600;}
-  table tbody td:nth-child(2){text-align:left;color:var(--muted);font-family:'Inter',sans-serif;}
-  table tbody tr:last-child td{border-bottom:none;}
-  .pct.up{color:var(--up);}
-  .pct.down{color:var(--down);}
-  .scroll-x{overflow-x:auto;-webkit-overflow-scrolling:touch;}
-
   details{margin-top:4px;}
   details summary{cursor:pointer;color:var(--muted);font-size:12.5px;padding:4px 0;}
-  details[open] summary{color:var(--paper);}
 
   .colmap{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}
   .colmap label{margin-top:0;}
 
   footer{max-width:640px;margin:0 auto;padding:8px 16px 30px;color:var(--muted);font-size:11.5px;line-height:1.7;}
-  footer .formula{
-    font-family:'IBM Plex Mono',monospace;color:var(--amber);font-size:11.5px;
-    margin-bottom:10px;line-height:1.9;
-  }
+  footer .formula{font-family:'IBM Plex Mono',monospace;color:var(--amber);font-size:11.5px;
+    margin-bottom:10px;line-height:1.9;}
   .empty{color:var(--muted);font-size:13px;padding:14px 0;text-align:center;}
 
-  /* 劇本卡片 scenario card */
-  .scenario-card{
-    background:var(--panel-2);border:1px solid var(--hairline);
-    border-radius:var(--radius);padding:14px;margin-bottom:14px;
-  }
-  .sc-head{margin-bottom:10px;}
+  /* 劇本卡片 */
+  .scenario-card{background:var(--panel-2);border:1px solid var(--hairline);
+    border-radius:var(--radius);padding:14px;margin-bottom:14px;}
+  .sc-head{margin-bottom:10px;cursor:pointer;user-select:none;}
+  .sc-head:active{opacity:.8;}
   .sc-title{display:flex;align-items:baseline;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
   .sc-name{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;}
   .sc-code{color:var(--muted);font-size:12px;}
+  .sc-tap-hint{font-size:11px;color:var(--amber);margin-left:auto;white-space:nowrap;}
   .sc-badges{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;}
-  .badge{
-    font-family:'IBM Plex Mono',monospace;font-size:11.5px;padding:4px 9px;
-    border-radius:999px;background:var(--panel);border:1px solid var(--hairline);color:var(--paper);
-  }
+  .badge{font-family:'IBM Plex Mono',monospace;font-size:11.5px;padding:4px 9px;
+    border-radius:999px;background:var(--panel);border:1px solid var(--hairline);color:var(--paper);}
   .badge.pct.up{color:var(--up);border-color:var(--up);}
   .badge.pct.down{color:var(--down);border-color:var(--down);}
   .badge.foreign.up{color:var(--amber);border-color:var(--amber);}
   .badge.foreign.down{color:var(--muted);}
+
+  /* 走勢圖區塊 */
+  .chart-area{
+    border-radius:8px;overflow:hidden;margin-bottom:12px;
+    border:1px solid var(--hairline);
+    height:0;transition:height .25s ease;
+  }
+  .chart-area.open{height:320px;}
+  .chart-area iframe{width:100%;height:100%;border:none;display:block;}
+  .chart-tabs{display:flex;gap:6px;margin-bottom:8px;}
+  .chart-tab{
+    font-size:12px;padding:5px 12px;border-radius:999px;cursor:pointer;
+    border:1px solid var(--hairline);background:var(--panel);color:var(--muted);
+    font-family:'IBM Plex Mono',monospace;
+  }
+  .chart-tab.active{background:var(--amber);color:#1A1304;border-color:var(--amber);}
 
   .sc-ohlc{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:6px;}
   .sc-ohlc label{font-size:10.5px;margin:0 0 3px;}
   .sc-ohlc input{padding:7px 8px;font-size:13px;}
 
   .cdp-row{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin:10px 0;}
-  .cdp-box{background:var(--panel);border:1px solid var(--hairline);border-radius:6px;padding:7px 4px;text-align:center;}
-  .cdp-box .name{display:block;font-size:9.5px;color:var(--muted);margin-bottom:3px;font-family:'IBM Plex Mono',monospace;}
+  .cdp-box{background:var(--panel);border:1px solid var(--hairline);border-radius:6px;
+    padding:7px 4px;text-align:center;}
+  .cdp-box .name{display:block;font-size:9.5px;color:var(--muted);margin-bottom:3px;
+    font-family:'IBM Plex Mono',monospace;}
   .cdp-box .val{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:12.5px;}
   .cdp-box.ah .val,.cdp-box.nh .val{color:var(--up);}
   .cdp-box.cdp{background:#20180A;}
   .cdp-box.cdp .val{color:var(--amber);}
   .cdp-box.nl .val,.cdp-box.al .val{color:var(--down);}
 
-  .sc-fields .row{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid var(--hairline);font-size:12.5px;}
+  .sc-fields .row{display:flex;justify-content:space-between;gap:10px;padding:6px 0;
+    border-bottom:1px solid var(--hairline);font-size:12.5px;}
   .sc-fields .row:last-child{border-bottom:none;}
   .sc-fields .k{color:var(--muted);flex:0 0 78px;}
   .sc-fields .v{flex:1;text-align:right;}
@@ -180,39 +138,24 @@
   .sc-fields .v.short{color:var(--down);}
   .sc-fields .v.neutral{color:var(--muted);}
 
-  .live-btn{margin-top:12px;}
-  .live-display{min-height:14px;}
-
-  /* 必要條件checklist */
+  /* checklist */
   .sc-checklist{margin-top:14px;border-top:1px solid var(--hairline);padding-top:12px;}
-  .sc-checklist h4{
-    font-size:12px;color:var(--amber);font-family:'IBM Plex Mono',monospace;
-    margin:0 0 8px;letter-spacing:.04em;
-  }
+  .sc-checklist h4{font-size:12px;color:var(--amber);font-family:'IBM Plex Mono',monospace;
+    margin:0 0 8px;letter-spacing:.04em;}
   .sc-checklist h4.bonus{color:var(--muted);margin-top:14px;}
-  .chk-row{
-    display:flex;align-items:center;gap:8px;padding:5px 0;font-size:12.5px;cursor:pointer;
-  }
-  .chk-row input[type=checkbox]{
-    width:18px;height:18px;flex:0 0 18px;accent-color:var(--amber);margin:0;
-  }
+  .chk-row{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:12.5px;cursor:pointer;}
+  .chk-row input[type=checkbox]{width:18px;height:18px;flex:0 0 18px;accent-color:var(--amber);margin:0;}
   .chk-row .stars{margin-left:auto;color:var(--amber);font-size:10px;white-space:nowrap;padding-left:6px;}
   .chk-row.bonus .stars{display:none;}
-  .winrate-banner{
-    margin:10px 0 4px;padding:9px 10px;border-radius:8px;text-align:center;
+  .winrate-banner{margin:10px 0 4px;padding:9px 10px;border-radius:8px;text-align:center;
     font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;
-    background:var(--panel);border:1px solid var(--hairline);
-  }
+    background:var(--panel);border:1px solid var(--hairline);}
 
-  /* 大盤環境檢查 */
   .market-check{display:flex;flex-direction:column;gap:2px;margin-top:10px;}
 
-  /* 風險控管原則卡 */
   .risk-list{list-style:none;margin:0;padding:0;}
-  .risk-list li{
-    padding:7px 0;border-bottom:1px solid var(--hairline);font-size:12.5px;line-height:1.5;
-    display:flex;gap:8px;
-  }
+  .risk-list li{padding:7px 0;border-bottom:1px solid var(--hairline);font-size:12.5px;
+    line-height:1.5;display:flex;gap:8px;}
   .risk-list li:last-child{border-bottom:none;}
   .risk-list li::before{content:'✓';color:var(--down);flex:0 0 auto;}
 </style>
@@ -222,20 +165,18 @@
 <header class="top">
   <div class="eyebrow">TWSE Daytrade Scenario Builder</div>
   <h1>CDP 開盤五分鐘<br>當沖劇本產生器</h1>
-  <div class="sub">輸入日期與門檻，自動算出隔一個交易日的 CDP 支撐壓力價位。資料每個交易日收盤後由排程自動更新，手機開網頁看結果就好。</div>
+  <div class="sub">輸入日期與門檻，自動算出隔一個交易日的 CDP 支撐壓力價位。點擊任意股票卡片可展開 5分K 走勢圖。</div>
   <div class="clock"><span class="dot">●</span><span id="clockTime" class="mono">--:--:--</span><span id="clockDate" class="mono"></span></div>
 </header>
 
 <main>
-
   <!-- Step 1 -->
   <section class="card" id="settingsCard">
     <h2><span class="tag">STEP 1</span> 設定條件</h2>
-    <p class="hint">選一個資料日期（留空=最新一個交易日），篩出符合門檻的股票，算出它們「下一個交易日」要用的 CDP 價位。選過去的日期可以用來回測「那天適合做多還是做空」。</p>
+    <p class="hint">選一個資料日期（留空=最新），篩出符合門檻的股票。選過去的日期可以回測「那天適合做多還是做空」。</p>
 
     <label for="dataDate">資料日期（留空 = 最新）</label>
     <input type="date" id="dataDate">
-    <p class="hint" style="margin:6px 0 0;">留空：讀取排程自動抓的最新資料（最快）。選日期：即時連證交所查那天的全市場資料（含外資買超），可查任何過去的交易日。</p>
 
     <div class="row2" style="margin-top:14px;">
       <div>
@@ -258,10 +199,8 @@
       <option value="8000">8000 張以上</option>
       <option value="10000">10000 張以上</option>
     </select>
-    <p class="hint" style="margin:6px 0 0;">外資買賣超資料公布較晚（常常要到晚上才出來），如果這項抓不到，股票仍會照常顯示，只是外資買超那一欄會是「—」。</p>
 
-    <h4 style="font-size:12px;color:var(--amber);font-family:'IBM Plex Mono',monospace;margin:16px 0 4px;letter-spacing:.04em;">大盤環境檢查（一、先看大盤）</h4>
-    <p class="hint" style="margin:0 0 8px;">這幾項要自己看盤判斷，沒有3項全符合的話，個股表現空間有限，當沖訊號的可信度會打折。</p>
+    <h4 style="font-size:12px;color:var(--amber);font-family:'IBM Plex Mono',monospace;margin:16px 0 4px;letter-spacing:.04em;">大盤環境檢查</h4>
     <div class="market-check">
       <label class="chk-row"><input type="checkbox" id="mkCheck1"> 加權指數上漲</label>
       <label class="chk-row"><input type="checkbox" id="mkCheck2"> 電子股走強</label>
@@ -273,17 +212,16 @@
     <div class="status" id="autoStatus"></div>
 
     <details>
-      <summary>進階：改用本地代理抓盤中即時排行（需要電腦）</summary>
-      <p class="hint" style="margin-top:8px;">這個模式要先在電腦上啟動 <code class="mono">cdp_proxy_server.py</code>，手機沒有電腦輔助的話可以忽略這個選項。</p>
-      <input type="text" id="proxyUrl" placeholder="http://你的電腦區網IP:8765/ranking" value="http://127.0.0.1:8765/ranking">
-      <button class="secondary" id="btnLoadProxy">改用本地代理即時排行</button>
+      <summary>進階：改用本地代理（需要電腦）</summary>
+      <p class="hint" style="margin-top:8px;">先在電腦上啟動 cdp_proxy_server.py，純手機可忽略。</p>
+      <input type="text" id="proxyUrl" value="http://127.0.0.1:8765/ranking">
+      <button class="secondary" id="btnLoadProxy">改用本地代理</button>
     </details>
   </section>
 
   <!-- 個股查詢 -->
   <section class="card" id="queryCard">
     <h2><span class="tag">查詢</span> 個股 CDP</h2>
-    <p class="hint">輸入股票代碼與你要採用的交易日，直接連線證交所抓那天的最高/最低/收盤，算出 CDP 五個價位（給下一個交易日參考）。</p>
     <div class="row2">
       <div>
         <label for="stockCode">股票代碼</label>
@@ -302,33 +240,32 @@
   <!-- Step 2 -->
   <section class="card" id="resultsCard">
     <h2><span class="tag">STEP 2</span> 劇本卡</h2>
-    <p class="hint">符合門檻的股票，依漲跌幅排序，每張卡片可直接改昨收/昨高/昨低/量即時重算。</p>
+    <p class="hint">點擊股票名稱展開/收合 5分K 走勢圖。每張卡片可直接改昨收/昨高/昨低/量即時重算。</p>
     <div class="status" id="tradeDateLine" style="margin-top:0;"></div>
     <div id="resultsList" style="display:none;"></div>
-    <div class="empty" id="resultsEmpty">還沒有資料 — 先按上面「讀取每日自動更新資料」或下面手動貼上。</div>
+    <div class="empty" id="resultsEmpty">還沒有資料 — 先按上面「讀取資料」。</div>
   </section>
 
   <!-- 手動貼上 -->
   <section class="card" id="pasteCard">
     <h2><span class="tag">備用</span> 手動貼上資料</h2>
-    <p class="hint">若自動抓取失敗（通常是瀏覽器安全限制擋住跨網域請求），到玩股網或任何漲跌幅排行頁面整段複製表格，貼到下面，再指定每一欄對應的欄位。</p>
-    <textarea id="pasteArea" placeholder="把整段表格複製貼上這裡，例如每一行：&#10;2330&#9;台積電&#9;1080&#9;1050&#9;1075&#9;+2.3&#9;45000"></textarea>
-
+    <p class="hint">自動抓取失敗時，從玩股網等頁面複製表格貼到這裡。</p>
+    <textarea id="pasteArea" placeholder="每行格式：2330&#9;台積電&#9;最高&#9;最低&#9;收盤&#9;漲跌%&#9;量"></textarea>
     <div class="colmap">
-      <div><label>代碼欄 (第幾欄)</label><input type="number" id="colCode" value="1" min="1"></div>
+      <div><label>代碼欄</label><input type="number" id="colCode" value="1" min="1"></div>
       <div><label>名稱欄</label><input type="number" id="colName" value="2" min="1"></div>
       <div><label>最高欄</label><input type="number" id="colHigh" value="3" min="1"></div>
       <div><label>最低欄</label><input type="number" id="colLow" value="4" min="1"></div>
       <div><label>收盤欄</label><input type="number" id="colClose" value="5" min="1"></div>
       <div><label>漲跌%欄</label><input type="number" id="colPct" value="6" min="1"></div>
       <div><label>成交量欄</label><input type="number" id="colVol" value="7" min="1"></div>
-      <div><label>外資買超欄(沒有就留空)</label><input type="number" id="colForeign" min="1"></div>
+      <div><label>外資買超欄(留空=無)</label><input type="number" id="colForeign" min="1"></div>
     </div>
-
-    <button class="secondary" id="btnParsePaste">解析貼上的資料並套用篩選</button>
+    <button class="secondary" id="btnParsePaste">解析並套用篩選</button>
     <div class="status" id="pasteStatus"></div>
   </section>
-  <!-- 風險控管原則 -->
+
+  <!-- 風險控管 -->
   <section class="card" id="riskCard">
     <h2><span class="tag">七</span> 風險控管原則</h2>
     <ul class="risk-list">
@@ -339,7 +276,6 @@
       <li>連續虧損 2～3 筆，休息一下再操作</li>
     </ul>
   </section>
-
 </main>
 
 <footer>
@@ -348,158 +284,155 @@
     AH = CDP + (最高-最低) ・ NH = CDP×2-最低<br>
     NL = CDP×2-最高 ・ AL = CDP - (最高-最低)
   </div>
-  用你選的那一天的最高/最低/收盤價當作「昨」資料代入 CDP 公式，算出的支撐壓力是給「下一個交易日」開盤用的參考。
-  本工具僅做技術指標計算與資料整理，不構成投資建議。資料來源：臺灣證券交易所公開資訊／使用者貼上資料。
+  本工具僅做技術指標計算，不構成投資建議。走勢圖由 TradingView 提供。
 </footer>
 
 <script>
 // ============================================================
-// 共用：CDP 計算
+// CDP 計算
 // ============================================================
-function calcCDP(high, low, close){
-  const cdp = (2*close + high + low) / 4;
-  const range = high - low;
-  return {
-    cdp,
-    ah: cdp + range,
-    nh: cdp*2 - low,
-    nl: cdp*2 - high,
-    al: cdp - range,
-  };
+function calcCDP(high,low,close){
+  const cdp=(2*close+high+low)/4,range=high-low;
+  return{cdp,ah:cdp+range,nh:cdp*2-low,nl:cdp*2-high,al:cdp-range};
 }
 function fmt(n){
-  if(n === null || n === undefined || Number.isNaN(n)) return '—';
+  if(n===null||n===undefined||Number.isNaN(n))return'—';
   return n.toFixed(2);
 }
 
 // ============================================================
-// 時鐘（台北時間）
+// 時鐘
 // ============================================================
 function tickClock(){
-  const now = new Date();
-  const tpe = new Date(now.toLocaleString('en-US', {timeZone:'Asia/Taipei'}));
-  const hh = String(tpe.getHours()).padStart(2,'0');
-  const mm = String(tpe.getMinutes()).padStart(2,'0');
-  const ss = String(tpe.getSeconds()).padStart(2,'0');
-  document.getElementById('clockTime').textContent = `${hh}:${mm}:${ss}`;
-  const days = ['週日','週一','週二','週三','週四','週五','週六'];
-  document.getElementById('clockDate').textContent =
+  const tpe=new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Taipei'}));
+  const hh=String(tpe.getHours()).padStart(2,'0');
+  const mm=String(tpe.getMinutes()).padStart(2,'0');
+  const ss=String(tpe.getSeconds()).padStart(2,'0');
+  document.getElementById('clockTime').textContent=`${hh}:${mm}:${ss}`;
+  const days=['週日','週一','週二','週三','週四','週五','週六'];
+  document.getElementById('clockDate').textContent=
     `${tpe.getFullYear()}/${String(tpe.getMonth()+1).padStart(2,'0')}/${String(tpe.getDate()).padStart(2,'0')} ${days[tpe.getDay()]} 台北時間`;
 }
-tickClock();
-setInterval(tickClock, 1000);
+tickClock();setInterval(tickClock,1000);
 
 // ============================================================
-// 大盤環境檢查（一、先看大盤）
+// 大盤環境檢查
 // ============================================================
 function updateMarketStatus(){
-  const boxes = [
-    document.getElementById('mkCheck1'),
-    document.getElementById('mkCheck2'),
-    document.getElementById('mkCheck3'),
-  ];
-  const count = boxes.filter(b => b.checked).length;
-  const el = document.getElementById('marketStatus');
-  if(count === 3){
-    el.className = 'status ok';
-    el.textContent = '3項全符合 → 大盤偏多，個股才有表現空間，當沖訊號可信度較高';
+  const count=[1,2,3].filter(i=>document.getElementById('mkCheck'+i).checked).length;
+  const el=document.getElementById('marketStatus');
+  if(count===3){
+    el.className='status ok';
+    el.textContent='3項全符合 → 大盤偏多，當沖訊號可信度較高';
   }else{
-    el.className = 'status err';
-    el.textContent = `只符合 ${count}/3 項 → 大盤環境不夠乾淨，下面個股訊號的可信度打折，操作上更要嚴守停損`;
+    el.className='status err';
+    el.textContent=`只符合 ${count}/3 項 → 大盤環境不乾淨，更要嚴守停損`;
   }
 }
-['mkCheck1','mkCheck2','mkCheck3'].forEach(id => {
-  document.getElementById(id).addEventListener('change', updateMarketStatus);
-});
+[1,2,3].forEach(i=>document.getElementById('mkCheck'+i).addEventListener('change',updateMarketStatus));
 updateMarketStatus();
 
 // ============================================================
-// STEP1: 讀取自動資料 → 篩選 → 算CDP → 顯示
+// 篩選 & 渲染
 // ============================================================
-let lastRows = []; // {code,name,close,high,low,changePct,volume}
+let lastRows=[];
 
 function applyFilterAndRender(rows){
-  const gainTh = parseFloat(document.getElementById('gainThreshold').value) || 0;
-  const volTh = parseFloat(document.getElementById('volThreshold').value) || 0;
-  const foreignTh = parseFloat(document.getElementById('foreignThreshold').value) || 0;
-
-  const filtered = rows.filter(r => {
-    const passVol = (r.volume ?? 0) >= volTh;
-    const passGain = r.changePct === null || r.changePct === undefined
-      ? true
-      : Math.abs(r.changePct) >= gainTh;
-    const passForeign = foreignTh <= 0
-      ? true
-      : (r.foreignNetBuy !== null && r.foreignNetBuy !== undefined && r.foreignNetBuy >= foreignTh);
-    return passVol && passGain && passForeign;
-  }).sort((a,b) => Math.abs(b.changePct ?? 0) - Math.abs(a.changePct ?? 0));
-
+  const gainTh=parseFloat(document.getElementById('gainThreshold').value)||0;
+  const volTh=parseFloat(document.getElementById('volThreshold').value)||0;
+  const foreignTh=parseFloat(document.getElementById('foreignThreshold').value)||0;
+  const filtered=rows.filter(r=>{
+    const passVol=(r.volume??0)>=volTh;
+    const passGain=r.changePct==null?true:Math.abs(r.changePct)>=gainTh;
+    const passForeign=foreignTh<=0?true:(r.foreignNetBuy!=null&&r.foreignNetBuy>=foreignTh);
+    return passVol&&passGain&&passForeign;
+  }).sort((a,b)=>Math.abs(b.changePct??0)-Math.abs(a.changePct??0));
   renderResultsCards(filtered);
 }
 
 // ============================================================
-// 劇本卡片引擎：算CDP衍生出的方向/進場條件/停損停利/備註
+// 走勢圖（TradingView 5分K）
 // ============================================================
-function computeScenario(high, low, close, volume, foreignNetBuy){
-  const lv = calcCDP(high, low, close);
-  const distPct = lv.cdp !== 0 ? (close - lv.cdp) / lv.cdp * 100 : 0;
-  let direction, directionLabel, entryCond, entryLow, entryHigh,
-      stopLossLabel, target1Label, target2Label;
+function buildChartUrl(code,interval){
+  const symbol=encodeURIComponent('TWSE:'+code);
+  return `https://s.tradingview.com/widgetembed/?symbol=${symbol}&interval=${interval}&theme=dark&locale=zh_TW&style=1&timezone=Asia%2FTaipei&hidesidetoolbar=1&hide_legend=0&saveimage=0&withdateranges=1`;
+}
 
-  if(distPct > 0){
-    direction = 'long';
-    directionLabel = distPct >= 3 ? '偏多（強勢延續）' : (distPct >= 1 ? '偏多（延續偏多）' : '偏多（觀察中）');
-    entryCond = '站上CDP不破，第一根5分K創高且量能放大時進場';
-    entryLow = lv.nh;
-    entryHigh = Math.round(lv.nh * 1.005 * 100) / 100;
-    stopLossLabel = `跌破CDP/第一根K棒低點 → 約${fmt(lv.nl)}元`;
-    target1Label = `${fmt(lv.nh)}元（測NH，先減碼）`;
-    target2Label = `${fmt(lv.ah)}元（測AH，剩餘出清）`;
-  } else if(distPct < 0){
-    direction = 'short';
-    directionLabel = distPct <= -3 ? '偏空（弱勢延續）' : (distPct <= -1 ? '偏空（延續偏空）' : '偏空（觀察中）');
-    entryCond = '跌破CDP或第一根K棒低點，反彈不過CDP時進場（觀察用）';
-    entryLow = Math.round(lv.nl * 0.995 * 100) / 100;
-    entryHigh = lv.nl;
-    stopLossLabel = `突破CDP/第一根K棒高點 → 約${fmt(lv.nh)}元`;
-    target1Label = `${fmt(lv.nl)}元（測NL，先減碼）`;
-    target2Label = `${fmt(lv.al)}元（測AL，剩餘出清）`;
-  } else {
-    direction = 'neutral';
-    directionLabel = '方向不明（觀望）';
-    entryCond = '暫無明確方向，建議先觀望';
-    entryLow = null; entryHigh = null;
-    stopLossLabel = '—'; target1Label = '—'; target2Label = '—';
+function toggleChart(card,code){
+  const area=card.querySelector('.chart-area');
+  const hint=card.querySelector('.sc-tap-hint');
+  if(area.classList.contains('open')){
+    area.classList.remove('open');
+    hint.textContent='▼ 展開走勢圖';
+    // 移除 iframe 節省記憶體
+    area.innerHTML='';
+    return;
   }
+  // 初始化 tab 和 iframe
+  const activeTab=card.querySelector('.chart-tab.active');
+  const interval=activeTab?activeTab.dataset.interval:'5';
+  area.innerHTML=`<iframe src="${buildChartUrl(code,interval)}" allowfullscreen loading="lazy"></iframe>`;
+  area.classList.add('open');
+  hint.textContent='▲ 收合';
+}
 
-  const ampPct = close ? (high - low) / close * 100 : 0;
-  const volLabel = volume >= 10000 ? '量大' : (volume >= 3000 ? '量中等' : '量平淡');
-  const ampLabel = ampPct >= 8 ? '波動劇烈' : (ampPct >= 4 ? '波動大' : '波動溫和');
-  const note = ampPct >= 6
-    ? `${volLabel}，${ampLabel}，適合短線快進快出`
-    : `${volLabel}，${ampLabel}，留意急拉急跌風險`;
+function switchChartTab(card,code,btn){
+  card.querySelectorAll('.chart-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  const area=card.querySelector('.chart-area');
+  if(area.classList.contains('open')){
+    area.innerHTML=`<iframe src="${buildChartUrl(code,btn.dataset.interval)}" allowfullscreen loading="lazy"></iframe>`;
+  }
+}
 
-  return { ...lv, direction, directionLabel, entryCond, entryLow, entryHigh,
-           stopLossLabel, target1Label, target2Label, note };
+// ============================================================
+// 劇本計算
+// ============================================================
+function computeScenario(high,low,close,volume,foreignNetBuy){
+  const lv=calcCDP(high,low,close);
+  const distPct=lv.cdp?((close-lv.cdp)/lv.cdp*100):0;
+  let direction,directionLabel,entryCond,entryLow,entryHigh,stopLossLabel,target1Label,target2Label;
+  if(distPct>0){
+    direction='long';
+    directionLabel=distPct>=3?'偏多（強勢延續）':(distPct>=1?'偏多（延續偏多）':'偏多（觀察中）');
+    entryCond='站上CDP不破，第一根5分K創高且量能放大時進場';
+    entryLow=lv.nh;entryHigh=Math.round(lv.nh*1.005*100)/100;
+    stopLossLabel=`跌破CDP/第一根K棒低點 → 約${fmt(lv.nl)}元`;
+    target1Label=`${fmt(lv.nh)}元（測NH，先減碼）`;
+    target2Label=`${fmt(lv.ah)}元（測AH，剩餘出清）`;
+  }else if(distPct<0){
+    direction='short';
+    directionLabel=distPct<=-3?'偏空（弱勢延續）':(distPct<=-1?'偏空（延續偏空）':'偏空（觀察中）');
+    entryCond='跌破CDP或第一根K棒低點，反彈不過CDP時進場';
+    entryLow=Math.round(lv.nl*0.995*100)/100;entryHigh=lv.nl;
+    stopLossLabel=`突破CDP/第一根K棒高點 → 約${fmt(lv.nh)}元`;
+    target1Label=`${fmt(lv.nl)}元（測NL，先減碼）`;
+    target2Label=`${fmt(lv.al)}元（測AL，剩餘出清）`;
+  }else{
+    direction='neutral';directionLabel='方向不明（觀望）';
+    entryCond='暫無明確方向，建議先觀望';
+    entryLow=null;entryHigh=null;
+    stopLossLabel='—';target1Label='—';target2Label='—';
+  }
+  const ampPct=close?(high-low)/close*100:0;
+  const volLabel=volume>=10000?'量大':(volume>=3000?'量中等':'量平淡');
+  const ampLabel=ampPct>=8?'波動劇烈':(ampPct>=4?'波動大':'波動溫和');
+  const note=ampPct>=6?`${volLabel}，${ampLabel}，適合短線快進快出`:`${volLabel}，${ampLabel}，留意急拉急跌風險`;
+  return{...lv,direction,directionLabel,entryCond,entryLow,entryHigh,stopLossLabel,target1Label,target2Label,note};
 }
 
 function renderScenarioBody(card){
-  const high = parseFloat(card.querySelector('.oh').value);
-  const low = parseFloat(card.querySelector('.ol').value);
-  const close = parseFloat(card.querySelector('.oc').value);
-  const volume = parseFloat(card.querySelector('.ov').value) || 0;
-  const foreignRaw = card.dataset.foreign;
-  const foreignNetBuy = foreignRaw === 'null' ? null : parseFloat(foreignRaw);
-  const body = card.querySelector('.sc-body');
-
-  if([high, low, close].some(v => Number.isNaN(v))){
-    body.innerHTML = '<p class="hint">請輸入有效的昨高/昨低/昨收數字</p>';
-    return;
+  const high=parseFloat(card.querySelector('.oh').value);
+  const low=parseFloat(card.querySelector('.ol').value);
+  const close=parseFloat(card.querySelector('.oc').value);
+  const volume=parseFloat(card.querySelector('.ov').value)||0;
+  const foreignNetBuy=card.dataset.foreign==='null'?null:parseFloat(card.dataset.foreign);
+  const body=card.querySelector('.sc-body');
+  if([high,low,close].some(v=>Number.isNaN(v))){
+    body.innerHTML='<p class="hint">請輸入有效的昨高/昨低/昨收數字</p>';return;
   }
-
-  const sc = computeScenario(high, low, close, volume, foreignNetBuy);
-
-  body.innerHTML = `
+  const sc=computeScenario(high,low,close,volume,foreignNetBuy);
+  body.innerHTML=`
     <div class="cdp-row">
       <div class="cdp-box ah"><span class="name">AH</span><span class="val mono">${fmt(sc.ah)}</span></div>
       <div class="cdp-box nh"><span class="name">NH</span><span class="val mono">${fmt(sc.nh)}</span></div>
@@ -510,96 +443,96 @@ function renderScenarioBody(card){
     <div class="sc-fields">
       <div class="row"><span class="k">劇本方向</span><span class="v ${sc.direction}">${sc.directionLabel}</span></div>
       <div class="row"><span class="k">進場條件</span><span class="v">${sc.entryCond}</span></div>
-      <div class="row"><span class="k">進場價參考</span><span class="v mono">${sc.entryLow !== null ? fmt(sc.entryLow) + ' ~ ' + fmt(sc.entryHigh) + ' 元' : '—'}</span></div>
+      <div class="row"><span class="k">進場價參考</span><span class="v mono">${sc.entryLow!==null?fmt(sc.entryLow)+' ~ '+fmt(sc.entryHigh)+' 元':'—'}</span></div>
       <div class="row"><span class="k">停損價</span><span class="v down">${sc.stopLossLabel}</span></div>
       <div class="row"><span class="k">第一目標</span><span class="v up">${sc.target1Label}</span></div>
       <div class="row"><span class="k">第二目標</span><span class="v up">${sc.target2Label}</span></div>
       <div class="row"><span class="k">備註</span><span class="v">${sc.note}</span></div>
-    </div>
-  `;
+    </div>`;
 }
 
-// ------------------------------------------------------------
-// 8項個股必要條件 checklist：能算的自動打勾(disabled)，不能算的留給使用者手動勾
-// ------------------------------------------------------------
 function updateAutoChecklist(card){
-  const high = parseFloat(card.querySelector('.oh').value);
-  const low = parseFloat(card.querySelector('.ol').value);
-  const close = parseFloat(card.querySelector('.oc').value);
-  const volume = parseFloat(card.querySelector('.ov').value) || 0;
-  if([high, low, close].some(v => Number.isNaN(v))) return;
-
-  const lv = calcCDP(high, low, close);
-  const foreignRaw = card.dataset.foreign;
-  const foreignNetBuy = foreignRaw === 'null' ? null : parseFloat(foreignRaw);
-  const changePctRaw = card.dataset.changepct;
-  const changePct = changePctRaw === 'null' ? null : parseFloat(changePctRaw);
-  const range = high - low;
-
-  const setChk = (key, val) => {
-    const el = card.querySelector(`.chk-auto[data-key="${key}"]`);
-    if(el) el.checked = !!val;
-  };
-
-  setChk('cdp', close > lv.cdp);
-  setChk('vol', volume >= 5000);
-  setChk('range36', changePct !== null && changePct >= 3 && changePct <= 6);
-  setChk('closehigh', range === 0 ? true : (high - close) / range <= 0.15);
-  setChk('foreign', foreignNetBuy !== null && foreignNetBuy > 0);
-
+  const high=parseFloat(card.querySelector('.oh').value);
+  const low=parseFloat(card.querySelector('.ol').value);
+  const close=parseFloat(card.querySelector('.oc').value);
+  const volume=parseFloat(card.querySelector('.ov').value)||0;
+  if([high,low,close].some(v=>Number.isNaN(v)))return;
+  const lv=calcCDP(high,low,close);
+  const foreignNetBuy=card.dataset.foreign==='null'?null:parseFloat(card.dataset.foreign);
+  const changePct=card.dataset.changepct==='null'?null:parseFloat(card.dataset.changepct);
+  const range=high-low;
+  const set=(key,val)=>{const el=card.querySelector(`.chk-auto[data-key="${key}"]`);if(el)el.checked=!!val;};
+  set('cdp',close>lv.cdp);
+  set('vol',volume>=5000);
+  set('range36',changePct!=null&&changePct>=3&&changePct<=6);
+  set('closehigh',range===0?true:(high-close)/range<=0.15);
+  set('foreign',foreignNetBuy!=null&&foreignNetBuy>0);
   updateWinRate(card);
 }
 
 function updateWinRate(card){
-  const checks = card.querySelectorAll('.chk-auto, .chk-manual');
-  let count = 0;
-  checks.forEach(c => { if(c.checked) count++; });
-  const banner = card.querySelector('.winrate-banner');
-  if(!banner) return;
-  let label, cls;
-  if(count >= 6){ label = `符合 ${count}/8 項 → 高勝率`; cls = 'ok'; }
-  else if(count >= 4){ label = `符合 ${count}/8 項 → 中等勝率`; cls = ''; }
-  else { label = `符合 ${count}/8 項 → 低勝率`; cls = 'err'; }
-  banner.className = 'winrate-banner status ' + cls;
-  banner.textContent = label;
+  let count=0;
+  card.querySelectorAll('.chk-auto,.chk-manual').forEach(c=>{if(c.checked)count++;});
+  const banner=card.querySelector('.winrate-banner');if(!banner)return;
+  let label,cls;
+  if(count>=6){label=`符合 ${count}/8 項 → 高勝率`;cls='ok';}
+  else if(count>=4){label=`符合 ${count}/8 項 → 中等勝率`;cls='';}
+  else{label=`符合 ${count}/8 項 → 低勝率`;cls='err';}
+  banner.className='winrate-banner status '+cls;
+  banner.textContent=label;
 }
 
+// ============================================================
+// 建立卡片
+// ============================================================
 function buildScenarioCard(row){
-  const code = row.code, name = row.name || '';
-  const pctText = (row.changePct === null || row.changePct === undefined) ? '—' : (row.changePct > 0 ? '+' : '') + row.changePct.toFixed(2) + '%';
-  const pctClass = (row.changePct ?? 0) >= 0 ? 'up' : 'down';
-  const hasForeign = row.foreignNetBuy !== null && row.foreignNetBuy !== undefined;
-  const foreignText = hasForeign ? Math.round(row.foreignNetBuy).toLocaleString() + ' 張' : '—';
-  const foreignClass = hasForeign && row.foreignNetBuy >= 0 ? 'up' : 'down';
+  const code=row.code,name=row.name||'';
+  const pctText=row.changePct==null?'—':(row.changePct>0?'+':'')+row.changePct.toFixed(2)+'%';
+  const pctClass=(row.changePct??0)>=0?'up':'down';
+  const hasForeign=row.foreignNetBuy!=null;
+  const foreignText=hasForeign?Math.round(row.foreignNetBuy).toLocaleString()+' 張':'—';
+  const foreignClass=hasForeign&&row.foreignNetBuy>=0?'up':'down';
 
-  const div = document.createElement('div');
-  div.className = 'scenario-card';
-  div.dataset.code = code;
-  div.dataset.foreign = hasForeign ? String(row.foreignNetBuy) : 'null';
-  div.dataset.changepct = (row.changePct === null || row.changePct === undefined) ? 'null' : String(row.changePct);
+  const div=document.createElement('div');
+  div.className='scenario-card';
+  div.dataset.code=code;
+  div.dataset.foreign=hasForeign?String(row.foreignNetBuy):'null';
+  div.dataset.changepct=row.changePct==null?'null':String(row.changePct);
 
-  div.innerHTML = `
+  div.innerHTML=`
     <div class="sc-head">
-      <div class="sc-title"><span class="sc-name">${name}</span><span class="sc-code mono">${code}</span></div>
+      <div class="sc-title">
+        <span class="sc-name">${name}</span>
+        <span class="sc-code mono">${code}</span>
+        <span class="sc-tap-hint">▼ 展開走勢圖</span>
+      </div>
       <div class="sc-badges">
         <span class="badge pct ${pctClass}">${pctText}</span>
-        <span class="badge mono">量 ${row.volume ? Math.round(row.volume).toLocaleString() : '—'} 張</span>
+        <span class="badge mono">量 ${row.volume?Math.round(row.volume).toLocaleString():'—'} 張</span>
       </div>
       <div class="sc-badges">
         <span class="badge foreign ${foreignClass}">外資買超 ${foreignText}</span>
       </div>
     </div>
-    <div class="sc-ohlc">
-      <div><label>昨收</label><input type="number" class="oc" step="0.01" value="${row.close ?? ''}"></div>
-      <div><label>昨高</label><input type="number" class="oh" step="0.01" value="${row.high ?? ''}"></div>
-      <div><label>昨低</label><input type="number" class="ol" step="0.01" value="${row.low ?? ''}"></div>
-      <div><label>量(張)</label><input type="number" class="ov" step="1" value="${row.volume ?? ''}"></div>
+
+    <div class="chart-tabs">
+      <button class="chart-tab active" data-interval="5">5分K</button>
+      <button class="chart-tab" data-interval="D">日線</button>
+      <button class="chart-tab" data-interval="W">週線</button>
     </div>
-    <p class="hint" style="margin:6px 0 10px;">↑ 可直接改這幾個數字，CDP/AH/NH/NL/AL與進場價位會自動重算</p>
+    <div class="chart-area"></div>
+
+    <div class="sc-ohlc">
+      <div><label>昨收</label><input type="number" class="oc" step="0.01" value="${row.close??''}"></div>
+      <div><label>昨高</label><input type="number" class="oh" step="0.01" value="${row.high??''}"></div>
+      <div><label>昨低</label><input type="number" class="ol" step="0.01" value="${row.low??''}"></div>
+      <div><label>量(張)</label><input type="number" class="ov" step="1" value="${row.volume??''}"></div>
+    </div>
+    <p class="hint" style="margin:6px 0 10px;">↑ 可直接改這幾個數字，CDP 各價位會自動重算</p>
     <div class="sc-body"></div>
 
     <div class="sc-checklist">
-      <h4>個股必要條件（符合6項以上＝高勝率，4~5項中等，3項以下偏低）</h4>
+      <h4>個股必要條件（6項以上＝高勝率，4~5項中等，3項以下偏低）</h4>
       <label class="chk-row"><input type="checkbox" class="chk-auto" data-key="cdp" disabled> 開盤站上CDP <span class="stars">★★★★★</span></label>
       <label class="chk-row"><input type="checkbox" class="chk-manual" data-key="ma"> 股價站上5/10/20MA且排列 <span class="stars">★★★★</span></label>
       <label class="chk-row"><input type="checkbox" class="chk-auto" data-key="vol" disabled> 成交量放大 <span class="stars">★★★★★</span></label>
@@ -609,37 +542,34 @@ function buildScenarioCard(row){
       <label class="chk-row"><input type="checkbox" class="chk-auto" data-key="closehigh" disabled> 前一天收最高附近 <span class="stars">★★★</span></label>
       <label class="chk-row"><input type="checkbox" class="chk-auto" data-key="foreign" disabled> 法人/主力買超 <span class="stars">★★★</span></label>
       <div class="winrate-banner status"></div>
-
       <h4 class="bonus">加分條件（手動勾，不計入上面8項）</h4>
-      <label class="chk-row bonus"><input type="checkbox" class="chk-bonus" data-key="rsi"> RSI 50~70（不過高）</label>
-      <label class="chk-row bonus"><input type="checkbox" class="chk-bonus" data-key="kd"> KD黃金交叉</label>
-      <label class="chk-row bonus"><input type="checkbox" class="chk-bonus" data-key="break5"> 突破開盤5分鐘高點</label>
-      <label class="chk-row bonus"><input type="checkbox" class="chk-bonus" data-key="theme"> 題材或族群強勢</label>
-      <label class="chk-row bonus"><input type="checkbox" class="chk-bonus" data-key="fundflow"> 市場資金聚焦</label>
+      <label class="chk-row bonus"><input type="checkbox" class="chk-bonus"> RSI 50~70（不過高）</label>
+      <label class="chk-row bonus"><input type="checkbox" class="chk-bonus"> KD黃金交叉</label>
+      <label class="chk-row bonus"><input type="checkbox" class="chk-bonus"> 突破開盤5分鐘高點</label>
+      <label class="chk-row bonus"><input type="checkbox" class="chk-bonus"> 題材或族群強勢</label>
+      <label class="chk-row bonus"><input type="checkbox" class="chk-bonus"> 市場資金聚焦</label>
     </div>
 
-    <p class="hint" style="margin:10px 0 6px;">即時報價：證交所的即時資料有跨網域限制，網頁本身抓不到，下面兩個按鈕會直接開外部頁面看即時股價。</p>
+    <p class="hint" style="margin:10px 0 6px;">即時報價（開新分頁）：</p>
     <div class="row2">
       <button class="secondary live-btn-twse" type="button">證交所即時</button>
       <button class="secondary live-btn-yahoo" type="button">Yahoo股市即時</button>
-    </div>
-  `;
+    </div>`;
 
-  ['oc', 'oh', 'ol', 'ov'].forEach(cls => {
-    div.querySelector('.' + cls).addEventListener('input', () => {
-      renderScenarioBody(div);
-      updateAutoChecklist(div);
-    });
+  // 走勢圖展開（點標題區）
+  div.querySelector('.sc-head').addEventListener('click',()=>toggleChart(div,code));
+
+  // 切換 K 線週期
+  div.querySelectorAll('.chart-tab').forEach(btn=>{
+    btn.addEventListener('click',e=>{e.stopPropagation();switchChartTab(div,code,btn);});
   });
-  div.querySelectorAll('.chk-manual').forEach(c => {
-    c.addEventListener('change', () => updateWinRate(div));
+
+  ['oc','oh','ol','ov'].forEach(cls=>{
+    div.querySelector('.'+cls).addEventListener('input',()=>{renderScenarioBody(div);updateAutoChecklist(div);});
   });
-  div.querySelector('.live-btn-twse').addEventListener('click', () => {
-    window.open(`https://mis.twse.com.tw/stock/index.jsp?stock=${code}`, '_blank', 'noopener');
-  });
-  div.querySelector('.live-btn-yahoo').addEventListener('click', () => {
-    window.open(`https://tw.stock.yahoo.com/quote/${code}.TW`, '_blank', 'noopener');
-  });
+  div.querySelectorAll('.chk-manual').forEach(c=>c.addEventListener('change',()=>updateWinRate(div)));
+  div.querySelector('.live-btn-twse').addEventListener('click',()=>window.open(`https://mis.twse.com.tw/stock/index.jsp?stock=${code}`,'_blank','noopener'));
+  div.querySelector('.live-btn-yahoo').addEventListener('click',()=>window.open(`https://tw.stock.yahoo.com/quote/${code}.TW`,'_blank','noopener'));
 
   renderScenarioBody(div);
   updateAutoChecklist(div);
@@ -647,376 +577,237 @@ function buildScenarioCard(row){
 }
 
 function renderResultsCards(rows){
-  const container = document.getElementById('resultsList');
-  const empty = document.getElementById('resultsEmpty');
-  container.innerHTML = '';
-
+  const container=document.getElementById('resultsList');
+  const empty=document.getElementById('resultsEmpty');
+  container.innerHTML='';
   if(!rows.length){
-    container.style.display = 'none';
-    empty.style.display = 'block';
-    empty.textContent = '沒有股票符合目前的門檻，試著調低漲跌幅、成交量或外資買超門檻。';
-    return;
+    container.style.display='none';empty.style.display='block';
+    empty.textContent='沒有股票符合目前的門檻，試著調低篩選條件。';return;
   }
-  empty.style.display = 'none';
-  container.style.display = 'block';
-
-  for(const r of rows){
-    if(r.high === undefined || r.low === undefined || r.close === undefined) continue;
-    container.appendChild(buildScenarioCard(r));
-  }
+  empty.style.display='none';container.style.display='block';
+  rows.forEach(r=>{if(r.high!=null&&r.low!=null&&r.close!=null)container.appendChild(buildScenarioCard(r));});
 }
 
 // ============================================================
-// 歷史日期：直連證交所抓指定日期的全市場資料 + 外資買賣超
+// 外資買超地圖
 // ============================================================
 async function fetchForeignNetBuyMapForDate(apiDateStr){
   try{
-    const url = `https://www.twse.com.tw/fund/T86?response=json&date=${apiDateStr}&selectType=ALL`;
-    const res = await fetch(url);
-    if(!res.ok) return {};
-    const json = await res.json();
-    if(!json.fields || !json.data) return {};
-    const fields = json.fields;
-    const idx = name => fields.findIndex(f => f.includes(name));
-    const codeI = idx('證券代號'), fb1I = idx('外陸資買賣超股數'), fb2I = idx('外資自營商買賣超股數');
-    if(codeI < 0) return {};
-    const map = {};
+    const res=await fetch(`https://www.twse.com.tw/fund/T86?response=json&date=${apiDateStr}&selectType=ALL`);
+    if(!res.ok)return{};
+    const json=await res.json();
+    if(!json.fields||!json.data)return{};
+    const fields=json.fields;
+    const idx=n=>fields.findIndex(f=>f.includes(n));
+    const codeI=idx('證券代號'),fb1I=idx('外陸資買賣超股數'),fb2I=idx('外資自營商買賣超股數');
+    if(codeI<0)return{};
+    const map={};
     for(const row of json.data){
-      const code = String(row[codeI]).trim();
-      const v1 = fb1I >= 0 ? (parseFloat(String(row[fb1I]).replace(/,/g,'')) || 0) : 0;
-      const v2 = fb2I >= 0 ? (parseFloat(String(row[fb2I]).replace(/,/g,'')) || 0) : 0;
-      map[code] = Math.round((v1 + v2) / 1000 * 10) / 10;
+      const code=String(row[codeI]).trim();
+      const v1=fb1I>=0?(parseFloat(String(row[fb1I]).replace(/,/g,''))||0):0;
+      const v2=fb2I>=0?(parseFloat(String(row[fb2I]).replace(/,/g,''))||0):0;
+      map[code]=Math.round((v1+v2)/1000*10)/10;
     }
     return map;
-  }catch(e){
-    return {};
-  }
+  }catch{return{};}
 }
 
+// ============================================================
+// 歷史市場資料
+// ============================================================
 async function fetchHistoricalMarketData(apiDateStr){
-  // 注意：type=ALL 在某些日期可能只回傳大盤統計表，沒有個股明細；
-  // type=ALLBUT0999 才是公開教學文件裡確認過、會包含個股逐筆收盤表的版本。
-  const url = `https://www.twse.com.tw/exchangeReport/MI_INDEX?response=json&date=${apiDateStr}&type=ALLBUT0999`;
-  const res = await fetch(url);
-  if(!res.ok) throw new Error('HTTP ' + res.status);
-  const json = await res.json();
-
-  let table = null;
-  let debugInfo = '';
-
-  // 新版格式：證交所把每張表包成 tables 陣列，每個元素自己有 fields/data
+  const res=await fetch(`https://www.twse.com.tw/exchangeReport/MI_INDEX?response=json&date=${apiDateStr}&type=ALLBUT0999`);
+  if(!res.ok)throw new Error('HTTP '+res.status);
+  const json=await res.json();
+  let table=null,debugInfo='';
   if(Array.isArray(json.tables)){
-    debugInfo = 'tables[' + json.tables.length + ']: ' +
-      json.tables.map((t, i) => `#${i}(${Array.isArray(t.fields) ? t.fields.slice(0,4).join('/') : '無fields'})`).join(' ');
+    debugInfo='tables['+json.tables.length+']: '+json.tables.map((t,i)=>`#${i}(${Array.isArray(t.fields)?t.fields.slice(0,4).join('/'):'無fields'})`).join(' ');
     for(const t of json.tables){
-      const f = t.fields;
-      if(Array.isArray(f) && f.some(x => String(x).includes('證券代號')) && f.some(x => String(x).includes('收盤'))){
-        if(Array.isArray(t.data)){
-          table = { fields: f, data: t.data };
-          break;
-        }
+      const f=t.fields;
+      if(Array.isArray(f)&&f.some(x=>String(x).includes('證券代號'))&&f.some(x=>String(x).includes('收盤'))&&Array.isArray(t.data)){
+        table={fields:f,data:t.data};break;
       }
     }
   }
-
-  // 舊版格式：fields1/data1...fields9/data9 散落在最上層，當作備援嘗試
   if(!table){
     for(const key of Object.keys(json)){
       if(key.startsWith('fields')){
-        const f = json[key];
-        if(Array.isArray(f) && f.some(x => String(x).includes('證券代號')) && f.some(x => String(x).includes('收盤'))){
-          const dataKey = key.replace('fields', 'data');
-          if(Array.isArray(json[dataKey])){
-            table = { fields: f, data: json[dataKey] };
-            break;
-          }
+        const f=json[key];
+        if(Array.isArray(f)&&f.some(x=>String(x).includes('證券代號'))&&f.some(x=>String(x).includes('收盤'))){
+          const dk=key.replace('fields','data');
+          if(Array.isArray(json[dk])){table={fields:f,data:json[dk]};break;}
         }
       }
     }
   }
-
-  if(!table){
-    const topKeys = Object.keys(json).join(', ');
-    throw new Error(`這天的資料裡找不到個股收盤表（可能不是交易日，或證交所格式又變了）。頂層欄位：${topKeys || '(空)'}。${debugInfo}`);
-  }
-
-  const fields = table.fields;
-  const idx = name => fields.findIndex(f => String(f).includes(name));
-  const codeI = idx('證券代號'), nameI = idx('證券名稱'), highI = idx('最高'),
-        lowI = idx('最低'), closeI = idx('收盤'), volI = idx('成交股數'),
-        diffI = idx('漲跌價差');
-  const signI = fields.findIndex(f => String(f).includes('漲跌') && !String(f).includes('價差'));
-
-  const toNum = s => {
-    if(s === undefined || s === null) return null;
-    const n = parseFloat(String(s).replace(/,/g,''));
-    return Number.isNaN(n) ? null : n;
-  };
-
-  const rows = [];
+  if(!table)throw new Error(`找不到個股收盤表。頂層欄位：${Object.keys(json).join(', ')}。${debugInfo}`);
+  const fields=table.fields;
+  const idx=n=>fields.findIndex(f=>String(f).includes(n));
+  const codeI=idx('證券代號'),nameI=idx('證券名稱'),highI=idx('最高'),lowI=idx('最低'),closeI=idx('收盤'),volI=idx('成交股數'),diffI=idx('漲跌價差');
+  const signI=fields.findIndex(f=>String(f).includes('漲跌')&&!String(f).includes('價差'));
+  const toNum=s=>{if(s==null)return null;const n=parseFloat(String(s).replace(/,/g,''));return Number.isNaN(n)?null:n;};
+  const rows=[];
   for(const row of table.data){
-    const code = codeI >= 0 ? String(row[codeI]).trim() : null;
-    const close = toNum(row[closeI]);
-    const high = toNum(row[highI]);
-    const low = toNum(row[lowI]);
-    if(!code || close === null || high === null || low === null) continue;
-
-    const volShares = volI >= 0 ? toNum(row[volI]) : null;
-    const volume = volShares !== null ? volShares / 1000 : null;
-
-    let changePct = null;
-    if(diffI >= 0){
-      let diff = toNum(row[diffI]);
-      if(diff !== null){
-        if(signI >= 0){
-          const s = String(row[signI]).trim();
-          if(s === '-') diff = -Math.abs(diff);
-          else if(s === '+') diff = Math.abs(diff);
-        }
-        const prevClose = close - diff;
-        if(prevClose) changePct = Math.round((diff / prevClose) * 10000) / 100;
+    const code=codeI>=0?String(row[codeI]).trim():null;
+    const close=toNum(row[closeI]),high=toNum(row[highI]),low=toNum(row[lowI]);
+    if(!code||close==null||high==null||low==null)continue;
+    const volShares=volI>=0?toNum(row[volI]):null;
+    const volume=volShares!=null?volShares/1000:null;
+    let changePct=null;
+    if(diffI>=0){
+      let diff=toNum(row[diffI]);
+      if(diff!=null){
+        if(signI>=0){const s=String(row[signI]).trim();if(s==='-')diff=-Math.abs(diff);else if(s==='+')diff=Math.abs(diff);}
+        const prev=close-diff;if(prev)changePct=Math.round((diff/prev)*10000)/100;
       }
     }
-    rows.push({ code, name: nameI >= 0 ? row[nameI] : '', high, low, close, volume, changePct });
+    rows.push({code,name:nameI>=0?row[nameI]:'',high,low,close,volume,changePct});
   }
   return rows;
 }
 
-document.getElementById('btnLoadAuto').addEventListener('click', async () => {
-  const statusEl = document.getElementById('autoStatus');
-  const dateLine = document.getElementById('tradeDateLine');
-  const pickedDate = document.getElementById('dataDate').value; // '' 或 'YYYY-MM-DD'
-  statusEl.className = 'status';
-  statusEl.textContent = '讀取中…';
-
+// ============================================================
+// 讀取資料
+// ============================================================
+document.getElementById('btnLoadAuto').addEventListener('click',async()=>{
+  const statusEl=document.getElementById('autoStatus');
+  const dateLine=document.getElementById('tradeDateLine');
+  const pickedDate=document.getElementById('dataDate').value;
+  statusEl.className='status';statusEl.textContent='讀取中…';
   try{
-    let rows, tradeDateStr, updatedAtStr = null;
-
+    let rows,tradeDateStr,updatedAtStr=null;
     if(!pickedDate){
-      const res = await fetch('./data/latest.json', {cache:'no-store'});
-      if(!res.ok) throw new Error('HTTP ' + res.status);
-      const json = await res.json();
-      rows = (json.rows || []).map(r => ({
-        code: r.code, name: r.name, close: r.close, high: r.high, low: r.low,
-        changePct: r.changePct, volume: r.volume, foreignNetBuy: r.foreignNetBuy,
-      }));
-      tradeDateStr = json.tradeDate;
-      updatedAtStr = json.updatedAt;
-    } else {
-      const apiDateStr = pickedDate.replace(/-/g, '');
-      statusEl.textContent = `正在連線證交所抓 ${pickedDate} 的歷史資料…`;
-      const marketRows = await fetchHistoricalMarketData(apiDateStr);
-      statusEl.textContent = `已取得股價資料，正在查 ${pickedDate} 的外資買賣超…`;
-      const foreignMap = await fetchForeignNetBuyMapForDate(apiDateStr);
-      rows = marketRows.map(r => ({ ...r, foreignNetBuy: foreignMap[r.code] ?? null }));
-      tradeDateStr = apiDateStr;
-    }
-
-    lastRows = rows;
-    applyFilterAndRender(rows);
-
-    statusEl.className = 'status ok';
-    if(updatedAtStr){
-      const ts = new Date(updatedAtStr).toLocaleString('zh-TW', {timeZone:'Asia/Taipei'});
-      statusEl.textContent = `讀取成功，共 ${rows.length} 筆。資料更新時間：${ts}`;
+      const res=await fetch('./data/latest.json',{cache:'no-store'});
+      if(!res.ok)throw new Error('HTTP '+res.status);
+      const json=await res.json();
+      rows=(json.rows||[]).map(r=>({code:r.code,name:r.name,close:r.close,high:r.high,low:r.low,changePct:r.changePct,volume:r.volume,foreignNetBuy:r.foreignNetBuy}));
+      tradeDateStr=json.tradeDate;updatedAtStr=json.updatedAt;
     }else{
-      statusEl.textContent = `讀取成功，共 ${rows.length} 筆（指定日期 ${pickedDate} 的歷史資料，直連證交所）`;
+      const apiDateStr=pickedDate.replace(/-/g,'');
+      statusEl.textContent=`正在連線證交所抓 ${pickedDate} 的歷史資料…`;
+      const marketRows=await fetchHistoricalMarketData(apiDateStr);
+      statusEl.textContent=`已取得股價，正在查外資買賣超…`;
+      const foreignMap=await fetchForeignNetBuyMapForDate(apiDateStr);
+      rows=marketRows.map(r=>({...r,foreignNetBuy:foreignMap[r.code]??null}));
+      tradeDateStr=apiDateStr;
     }
-
+    lastRows=rows;applyFilterAndRender(rows);
+    statusEl.className='status ok';
+    statusEl.textContent=updatedAtStr
+      ?`讀取成功，共 ${rows.length} 筆。更新時間：${new Date(updatedAtStr).toLocaleString('zh-TW',{timeZone:'Asia/Taipei'})}`
+      :`讀取成功，共 ${rows.length} 筆（${pickedDate} 歷史資料）`;
     if(tradeDateStr){
-      const d = String(tradeDateStr);
-      const niceDate = d.length === 8 ? `${d.slice(0,4)}-${d.slice(4,6)}-${d.slice(6,8)}` : d;
-      dateLine.className = 'status';
-      dateLine.textContent = `資料日期：${niceDate}（股票的最高/最低/收盤、外資買超都是這一天的）`;
-    }else{
-      dateLine.textContent = '';
+      const d=String(tradeDateStr);
+      const nd=d.length===8?`${d.slice(0,4)}-${d.slice(4,6)}-${d.slice(6,8)}`:d;
+      dateLine.className='status';dateLine.textContent=`資料日期：${nd}`;
     }
   }catch(err){
-    statusEl.className = 'status err';
-    const extra = pickedDate
-      ? '（指定日期的歷史資料抓取失敗，可能該日不是交易日，或被瀏覽器跨網域限制擋住，可改用下面手動貼上）'
-      : '（可能是 data/latest.json 還沒被排程產生過，到 repo 的 Actions 分頁手動 Run workflow 一次；或改用下面手動貼上）';
-    statusEl.textContent = '讀取失敗：' + err.message + extra;
+    statusEl.className='status err';
+    statusEl.textContent='讀取失敗：'+err.message+(pickedDate?'（可能不是交易日，或被瀏覽器跨網域限制擋住）':'（到 Actions 分頁手動 Run workflow 一次）');
   }
 });
 
-document.getElementById('gainThreshold').addEventListener('change', () => lastRows.length && applyFilterAndRender(lastRows));
-document.getElementById('volThreshold').addEventListener('change', () => lastRows.length && applyFilterAndRender(lastRows));
-document.getElementById('foreignThreshold').addEventListener('change', () => lastRows.length && applyFilterAndRender(lastRows));
+['gainThreshold','volThreshold','foreignThreshold'].forEach(id=>{
+  document.getElementById(id).addEventListener('change',()=>lastRows.length&&applyFilterAndRender(lastRows));
+});
 
-// 進階：本地代理（選用，需要電腦跑 cdp_proxy_server.py）
-document.getElementById('btnLoadProxy').addEventListener('click', async () => {
-  const statusEl = document.getElementById('autoStatus');
-  const url = document.getElementById('proxyUrl').value.trim();
-  statusEl.className = 'status';
-  statusEl.textContent = '連線本地代理中…';
+document.getElementById('btnLoadProxy').addEventListener('click',async()=>{
+  const statusEl=document.getElementById('autoStatus');
+  const url=document.getElementById('proxyUrl').value.trim();
+  statusEl.className='status';statusEl.textContent='連線本地代理中…';
   try{
-    const res = await fetch(url, {cache:'no-store'});
-    if(!res.ok) throw new Error('HTTP ' + res.status);
-    const json = await res.json();
-    if(!json.rows){
-      throw new Error('代理伺服器回傳的格式不是預期的 {rows:[...]}，請依 cdp_proxy_server.py 裡的說明調整解析邏輯');
-    }
-    lastRows = json.rows;
-    applyFilterAndRender(json.rows);
-    statusEl.className = 'status ok';
-    statusEl.textContent = `讀取成功，共 ${json.rows.length} 筆（即時代理）`;
-  }catch(err){
-    statusEl.className = 'status err';
-    statusEl.textContent = '連線失敗：' + err.message;
-  }
+    const res=await fetch(url,{cache:'no-store'});if(!res.ok)throw new Error('HTTP '+res.status);
+    const json=await res.json();if(!json.rows)throw new Error('格式錯誤');
+    lastRows=json.rows;applyFilterAndRender(json.rows);
+    statusEl.className='status ok';statusEl.textContent=`讀取成功，共 ${json.rows.length} 筆（即時代理）`;
+  }catch(err){statusEl.className='status err';statusEl.textContent='連線失敗：'+err.message;}
 });
 
 // ============================================================
-// 個股 CDP 查詢（直接連證交所單股 API）
+// 個股查詢
 // ============================================================
-function toROCDateParts(isoDate){
-  const [y,m,d] = isoDate.split('-').map(Number);
-  return { rocY: y - 1911, m, d, gregY: y };
+function toROCDateParts(isoDate){const[y,m,d]=isoDate.split('-').map(Number);return{rocY:y-1911,m,d,gregY:y};}
+
+async function fetchForeignNetBuyForDate(code,apiDateStr){
+  try{
+    const res=await fetch(`https://www.twse.com.tw/fund/T86?response=json&date=${apiDateStr}&selectType=ALL`);
+    if(!res.ok)return null;const json=await res.json();
+    if(!json.fields||!json.data)return null;
+    const fields=json.fields;const idx=n=>fields.findIndex(f=>f.includes(n));
+    const codeI=idx('證券代號'),fb1I=idx('外陸資買賣超股數'),fb2I=idx('外資自營商買賣超股數');
+    if(codeI<0)return null;
+    const row=json.data.find(r=>String(r[codeI]).trim()===code);if(!row)return null;
+    const v1=fb1I>=0?(parseFloat(String(row[fb1I]).replace(/,/g,''))||0):0;
+    const v2=fb2I>=0?(parseFloat(String(row[fb2I]).replace(/,/g,''))||0):0;
+    return Math.round((v1+v2)/1000*10)/10;
+  }catch{return null;}
 }
 
-async function fetchForeignNetBuyForDate(code, apiDateStr){
+document.getElementById('btnQueryStock').addEventListener('click',async()=>{
+  const statusEl=document.getElementById('queryStatus');
+  const ladderEl=document.getElementById('ladderResult');
+  const code=document.getElementById('stockCode').value.trim();
+  const dateStr=document.getElementById('stockDate').value;
+  ladderEl.innerHTML='';
+  if(!code||!dateStr){statusEl.className='status err';statusEl.textContent='請輸入股票代碼與日期';return;}
+  statusEl.className='status';statusEl.textContent='連線證交所查詢中…';
   try{
-    const url = `https://www.twse.com.tw/fund/T86?response=json&date=${apiDateStr}&selectType=ALL`;
-    const res = await fetch(url);
-    if(!res.ok) return null;
-    const json = await res.json();
-    if(!json.fields || !json.data) return null;
-    const fields = json.fields;
-    const idx = name => fields.findIndex(f => f.includes(name));
-    const codeI = idx('證券代號'), fb1I = idx('外陸資買賣超股數'), fb2I = idx('外資自營商買賣超股數');
-    if(codeI < 0) return null;
-    const row = json.data.find(r => String(r[codeI]).trim() === code);
-    if(!row) return null;
-    const v1 = fb1I >= 0 ? parseFloat(String(row[fb1I]).replace(/,/g,'')) || 0 : 0;
-    const v2 = fb2I >= 0 ? parseFloat(String(row[fb2I]).replace(/,/g,'')) || 0 : 0;
-    return Math.round((v1 + v2) / 1000 * 10) / 10;
-  }catch(e){
-    return null;
-  }
-}
-
-document.getElementById('btnQueryStock').addEventListener('click', async () => {
-  const statusEl = document.getElementById('queryStatus');
-  const ladderEl = document.getElementById('ladderResult');
-  const code = document.getElementById('stockCode').value.trim();
-  const dateStr = document.getElementById('stockDate').value;
-  ladderEl.innerHTML = '';
-  if(!code || !dateStr){
-    statusEl.className = 'status err';
-    statusEl.textContent = '請輸入股票代碼與日期';
-    return;
-  }
-  statusEl.className = 'status';
-  statusEl.textContent = '連線證交所查詢中…';
-
-  try{
-    const { rocY, m, d, gregY } = toROCDateParts(dateStr);
-    const apiDate = `${gregY}${String(m).padStart(2,'0')}01`;
-    const url = `https://www.twse.com.tw/exchangeReport/STOCK_DAY?response=json&date=${apiDate}&stockNo=${encodeURIComponent(code)}`;
-    const res = await fetch(url);
-    if(!res.ok) throw new Error('HTTP ' + res.status);
-    const json = await res.json();
-    if(!json.data || !json.fields) throw new Error('查無資料（可能該股票代碼錯誤，或當月沒有交易資料）');
-
-    const fields = json.fields;
-    const idx = name => fields.findIndex(f => f.includes(name));
-    const dateIdx = idx('日期'), highIdx = idx('最高'), lowIdx = idx('最低'),
-          closeIdx = idx('收盤'), volIdx = idx('成交股數'), chgIdx = idx('漲跌價差');
-
-    const targetDate = `${rocY}/${String(m).padStart(2,'0')}/${String(d).padStart(2,'0')}`;
-    const row = json.data.find(r => r[dateIdx] === targetDate);
-    if(!row) throw new Error(`在回傳資料裡找不到 ${targetDate} 這一天（可能不是交易日）`);
-
-    const high = parseFloat(String(row[highIdx]).replace(/,/g,''));
-    const low = parseFloat(String(row[lowIdx]).replace(/,/g,''));
-    const close = parseFloat(String(row[closeIdx]).replace(/,/g,''));
-    const volShares = volIdx >= 0 ? parseFloat(String(row[volIdx]).replace(/,/g,'')) : NaN;
-    const volume = Number.isNaN(volShares) ? null : volShares / 1000;
-
-    let changePct = null;
-    if(chgIdx >= 0){
-      const chg = parseFloat(String(row[chgIdx]).replace(/,/g,''));
-      if(!Number.isNaN(chg) && (close - chg) !== 0) changePct = Math.round((chg / (close - chg)) * 10000) / 100;
-    }
-
-    let name = '';
-    if(json.title){
-      const nameMatch = json.title.match(/\d{4,6}\s+(\S+?)\s*每日/);
-      if(nameMatch) name = nameMatch[1];
-    }
-
-    statusEl.textContent = '已取得股價，正在查外資買超…';
-    const apiDateExact = `${gregY}${String(m).padStart(2,'0')}${String(d).padStart(2,'0')}`;
-    const foreignNetBuy = await fetchForeignNetBuyForDate(code, apiDateExact);
-
-    ladderEl.innerHTML = '';
-    ladderEl.appendChild(buildScenarioCard({ code, name, high, low, close, volume, changePct, foreignNetBuy }));
-    statusEl.className = 'status ok';
-    statusEl.textContent = `${targetDate} 收盤 ${fmt(close)} → 以上為下一個交易日參考價位`;
-  }catch(err){
-    statusEl.className = 'status err';
-    statusEl.textContent = '查詢失敗：' + err.message + '（多半是瀏覽器跨網域限制，可改用手動貼上方式）';
-  }
+    const{rocY,m,d,gregY}=toROCDateParts(dateStr);
+    const apiDate=`${gregY}${String(m).padStart(2,'0')}01`;
+    const res=await fetch(`https://www.twse.com.tw/exchangeReport/STOCK_DAY?response=json&date=${apiDate}&stockNo=${encodeURIComponent(code)}`);
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const json=await res.json();if(!json.data||!json.fields)throw new Error('查無資料');
+    const fields=json.fields;const idx=n=>fields.findIndex(f=>f.includes(n));
+    const dateIdx=idx('日期'),highIdx=idx('最高'),lowIdx=idx('最低'),closeIdx=idx('收盤'),volIdx=idx('成交股數'),chgIdx=idx('漲跌價差');
+    const targetDate=`${rocY}/${String(m).padStart(2,'0')}/${String(d).padStart(2,'0')}`;
+    const row=json.data.find(r=>r[dateIdx]===targetDate);
+    if(!row)throw new Error(`找不到 ${targetDate}（可能不是交易日）`);
+    const high=parseFloat(String(row[highIdx]).replace(/,/g,''));
+    const low=parseFloat(String(row[lowIdx]).replace(/,/g,''));
+    const close=parseFloat(String(row[closeIdx]).replace(/,/g,''));
+    const volShares=volIdx>=0?parseFloat(String(row[volIdx]).replace(/,/g,'')):NaN;
+    const volume=Number.isNaN(volShares)?null:volShares/1000;
+    let changePct=null;
+    if(chgIdx>=0){const chg=parseFloat(String(row[chgIdx]).replace(/,/g,''));if(!Number.isNaN(chg)&&(close-chg))changePct=Math.round((chg/(close-chg))*10000)/100;}
+    let name='';if(json.title){const m2=json.title.match(/\d{4,6}\s+(\S+?)\s*每日/);if(m2)name=m2[1];}
+    statusEl.textContent='已取得股價，正在查外資買超…';
+    const apiDateExact=`${gregY}${String(m).padStart(2,'0')}${String(d).padStart(2,'0')}`;
+    const foreignNetBuy=await fetchForeignNetBuyForDate(code,apiDateExact);
+    ladderEl.innerHTML='';ladderEl.appendChild(buildScenarioCard({code,name,high,low,close,volume,changePct,foreignNetBuy}));
+    statusEl.className='status ok';statusEl.textContent=`${targetDate} 收盤 ${fmt(close)} → 以上為下一個交易日參考`;
+  }catch(err){statusEl.className='status err';statusEl.textContent='查詢失敗：'+err.message;}
 });
 
 // ============================================================
-// 手動貼上備援
+// 手動貼上
 // ============================================================
-document.getElementById('btnParsePaste').addEventListener('click', () => {
-  const statusEl = document.getElementById('pasteStatus');
-  const raw = document.getElementById('pasteArea').value;
-  if(!raw.trim()){
-    statusEl.className = 'status err';
-    statusEl.textContent = '請先貼上資料';
-    return;
+document.getElementById('btnParsePaste').addEventListener('click',()=>{
+  const statusEl=document.getElementById('pasteStatus');
+  const raw=document.getElementById('pasteArea').value;
+  if(!raw.trim()){statusEl.className='status err';statusEl.textContent='請先貼上資料';return;}
+  const cCode=parseInt(document.getElementById('colCode').value)-1;
+  const cName=parseInt(document.getElementById('colName').value)-1;
+  const cHigh=parseInt(document.getElementById('colHigh').value)-1;
+  const cLow=parseInt(document.getElementById('colLow').value)-1;
+  const cClose=parseInt(document.getElementById('colClose').value)-1;
+  const cPct=parseInt(document.getElementById('colPct').value)-1;
+  const cVol=parseInt(document.getElementById('colVol').value)-1;
+  const cForeignRaw=document.getElementById('colForeign').value;
+  const cForeign=cForeignRaw?parseInt(cForeignRaw)-1:null;
+  const toNum=s=>{if(s==null)return null;const n=parseFloat(String(s).replace(/[,%+]/g,''));return Number.isNaN(n)?null:n;};
+  const rows=[];
+  for(const line of raw.split('\n').map(l=>l.trim()).filter(Boolean)){
+    const cells=line.split(/\t+|\s{2,}/).map(c=>c.trim()).filter(c=>c!=='');
+    if(cells.length<3)continue;
+    const code=cells[cCode];
+    if(!code||!/^[0-9A-Za-z]+$/.test(code))continue;
+    rows.push({code,name:cells[cName]??'',high:toNum(cells[cHigh]),low:toNum(cells[cLow]),close:toNum(cells[cClose]),changePct:toNum(cells[cPct]),volume:toNum(cells[cVol]),foreignNetBuy:cForeign!=null?toNum(cells[cForeign]):null});
   }
-  const cCode = parseInt(document.getElementById('colCode').value) - 1;
-  const cName = parseInt(document.getElementById('colName').value) - 1;
-  const cHigh = parseInt(document.getElementById('colHigh').value) - 1;
-  const cLow = parseInt(document.getElementById('colLow').value) - 1;
-  const cClose = parseInt(document.getElementById('colClose').value) - 1;
-  const cPct = parseInt(document.getElementById('colPct').value) - 1;
-  const cVol = parseInt(document.getElementById('colVol').value) - 1;
-  const cForeignRaw = document.getElementById('colForeign').value;
-  const cForeign = cForeignRaw ? parseInt(cForeignRaw) - 1 : null;
-
-  const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
-  const rows = [];
-  for(const line of lines){
-    // 支援 tab 或多個空白分隔
-    const cells = line.split(/\t+|\s{2,}/).map(c => c.trim()).filter(c => c !== '');
-    if(cells.length < 3) continue;
-    const toNum = s => {
-      if(s === undefined) return null;
-      const n = parseFloat(String(s).replace(/[,%+]/g,''));
-      return Number.isNaN(n) ? null : n;
-    };
-    const code = cells[cCode];
-    if(!code || !/^[0-9A-Za-z]+$/.test(code)) continue; // 跳過表頭等非資料列
-    rows.push({
-      code,
-      name: cells[cName] ?? '',
-      high: toNum(cells[cHigh]),
-      low: toNum(cells[cLow]),
-      close: toNum(cells[cClose]),
-      changePct: toNum(cells[cPct]),
-      volume: toNum(cells[cVol]),
-      foreignNetBuy: cForeign !== null ? toNum(cells[cForeign]) : null,
-    });
-  }
-
-  const valid = rows.filter(r => r.high !== null && r.low !== null && r.close !== null);
-  if(!valid.length){
-    statusEl.className = 'status err';
-    statusEl.textContent = '沒有解析出有效資料，檢查一下欄位編號是否對應正確，或資料是否用Tab/多個空白分隔。';
-    return;
-  }
-  lastRows = valid;
-  applyFilterAndRender(valid);
-  statusEl.className = 'status ok';
-  statusEl.textContent = `解析成功，共 ${valid.length} 筆，已套用篩選並顯示在上面的劇本表。`;
-  document.getElementById('resultsCard').scrollIntoView({behavior:'smooth', block:'start'});
+  const valid=rows.filter(r=>r.high!=null&&r.low!=null&&r.close!=null);
+  if(!valid.length){statusEl.className='status err';statusEl.textContent='沒有解析出有效資料';return;}
+  lastRows=valid;applyFilterAndRender(valid);
+  statusEl.className='status ok';statusEl.textContent=`解析成功，共 ${valid.length} 筆`;
+  document.getElementById('resultsCard').scrollIntoView({behavior:'smooth',block:'start'});
 });
 </script>
 </body>
